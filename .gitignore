@@ -1,0 +1,52 @@
+# Kotlin & Java
+*.class
+*.log
+*.ctxt
+*.jar
+*.war
+*.ear
+*.nar
+*.zip
+*.tar.gz
+*.rar
+
+# KMP-specific
+.kotlin/
+.konan/
+*.klib
+.idea/kmm.xml
+
+# Gradle
+.gradle/
+.gradle-cache/
+build/
+**/build/
+out/
+**/out/
+
+# Gradle Wrapper (keep the JAR file!)
+!gradle/wrapper/gradle-wrapper.jar
+
+# Android
+.cxx/
+local.properties
+
+# IntelliJ / JetBrains IDEs
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# macOS
+.DS_Store
+
+# VM crash logs
+hs_err_pid*
+replay_pid*
+
+# iOS / Xcode (if using Cocoapods or exporting to iOS)
+Pods/
+*.xcworkspace
+*.xcuserstate
+*.xcuserdata/
+project.xcworkspace/
