@@ -1,6 +1,6 @@
 plugins {
-    alias(libs.plugins.kotlin.multiplatform)
-    alias(libs.plugins.android.kotlin.multiplatform.library)
+    alias(libs.plugins.kotlinMultiplatform)
+    alias(libs.plugins.androidKotlinMultiplatformLibrary)
 }
 
 kotlin {
@@ -81,7 +81,7 @@ kotlin {
             dependencies {
                 implementation(libs.androidx.runner)
                 implementation(libs.androidx.core)
-                implementation(libs.androidx.junit)
+                implementation(libs.androidx.testExt.junit)
             }
         }
 
