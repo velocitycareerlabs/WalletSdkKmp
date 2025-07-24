@@ -24,4 +24,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "WalletSdkKmp"
 include(":app")
-include(":core")
+include(":velocity-exchange-verifiers")
