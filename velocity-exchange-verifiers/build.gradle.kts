@@ -1,6 +1,11 @@
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidKotlinMultiplatformLibrary)
+    alias(libs.plugins.mavenPublish)
+//    NOTE:
+//    The org.jetbrains.kotlin.native.cocoapods plugin:
+//    •	Is already bundled with kotlinMultiplatform
+//    •	Must not be applied again
 }
 
 kotlin {

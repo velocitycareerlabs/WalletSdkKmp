@@ -11,7 +11,6 @@ import io.velocitycareerlabs.velocity_exchange_verifiers.api.types.ErrorCode
 import io.velocitycareerlabs.velocity_exchange_verifiers.api.types.Verifier
 import io.velocitycareerlabs.velocity_exchange_verifiers.api.types.W3CCredentialJwtV1
 import io.velocitycareerlabs.velocity_exchange_verifiers.impl.errors.buildError
-import io.velocitycareerlabs.velocity_exchange_verifiers.impl.utils.withPath
 
 /**
  * Verifies that the Credential JWT's `iss` claim matches the expected issuer metadata.
