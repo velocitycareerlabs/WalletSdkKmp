@@ -1,4 +1,5 @@
 plugins {
+    alias(libs.plugins.androidLibrary) apply false
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidKotlinMultiplatformLibrary)
     alias(libs.plugins.mavenPublish)
