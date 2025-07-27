@@ -8,10 +8,18 @@
 package io.velocitycareerlabs.velocity_exchange_verifiers.api
 
 import io.velocitycareerlabs.velocity_exchange_verifiers.api.types.CredentialEndpointResponse
+import io.velocitycareerlabs.velocity_exchange_verifiers.api.types.CredentialVerifiers
 import io.velocitycareerlabs.velocity_exchange_verifiers.api.types.VerificationContext
 import io.velocitycareerlabs.velocity_exchange_verifiers.api.types.VerificationError
 import io.velocitycareerlabs.velocity_exchange_verifiers.impl.rules.verifyCredentialJwtPayloadStrict
 import io.velocitycareerlabs.velocity_exchange_verifiers.impl.utils.withPath
+import io.velocitycareerlabs.velocity_exchange_verifiers.impl.verifiers.pure_verifiers.algIsSupportedVerifier
+import io.velocitycareerlabs.velocity_exchange_verifiers.impl.verifiers.pure_verifiers.credentialSchemaVerifier
+import io.velocitycareerlabs.velocity_exchange_verifiers.impl.verifiers.pure_verifiers.credentialStatusVerifier
+import io.velocitycareerlabs.velocity_exchange_verifiers.impl.verifiers.pure_verifiers.issClaimMatchesEitherMetadataOrCredentialIssuerVerifier
+import io.velocitycareerlabs.velocity_exchange_verifiers.impl.verifiers.pure_verifiers.issClaimMatchesMetadataVerifier
+import io.velocitycareerlabs.velocity_exchange_verifiers.impl.verifiers.pure_verifiers.kidClaimIsVelocityV2Verifier
+import io.velocitycareerlabs.velocity_exchange_verifiers.impl.verifiers.pure_verifiers.subIsDidJwkOrCnfVerifier
 
 /**
  * Verifies the structure and contents of a Credential Endpoint response.
@@ -39,14 +47,26 @@ import io.velocitycareerlabs.velocity_exchange_verifiers.impl.utils.withPath
  */
 fun verifyCredentialEndpointResponse(
     response: CredentialEndpointResponse,
-    context: VerificationContext
+    context: VerificationContext,
+    verifiers: CredentialVerifiers = defaultCredentialVerifiers
 ): List<VerificationError> {
     val credentials = response.credentials ?: return emptyList()
 
     return credentials.flatMapIndexed { index, credential ->
         verifyCredentialJwtPayloadStrict(
             credential,
-            withPath(context, listOf("credentials", index))
+            withPath(context, listOf("credentials", index)),
+            verifiers
         )
     }
 }
+
+val defaultCredentialVerifiers = CredentialVerifiers(
+    algIsSupported = algIsSupportedVerifier,
+    credentialSchema = credentialSchemaVerifier,
+    credentialStatus = credentialStatusVerifier,
+    issClaimMatchesEitherMetadataOrCredentialIssuer = issClaimMatchesEitherMetadataOrCredentialIssuerVerifier,
+    issClaimMatchesMetadata = issClaimMatchesMetadataVerifier,
+    kidClaimIsVelocityV2 = kidClaimIsVelocityV2Verifier,
+    subIsDidJwkOrCnf = subIsDidJwkOrCnfVerifier
+)

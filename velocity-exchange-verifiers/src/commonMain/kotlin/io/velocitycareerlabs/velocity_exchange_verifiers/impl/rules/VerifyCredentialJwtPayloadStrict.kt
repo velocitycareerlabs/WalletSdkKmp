@@ -7,16 +7,10 @@
 
 package io.velocitycareerlabs.velocity_exchange_verifiers.impl.rules
 
+import io.velocitycareerlabs.velocity_exchange_verifiers.api.types.CredentialVerifiers
 import io.velocitycareerlabs.velocity_exchange_verifiers.api.types.VerificationContext
 import io.velocitycareerlabs.velocity_exchange_verifiers.api.types.VerificationError
 import io.velocitycareerlabs.velocity_exchange_verifiers.api.types.W3CCredentialJwtV1
-import io.velocitycareerlabs.velocity_exchange_verifiers.impl.verifiers.pure_verifiers.algIsSupportedVerifier
-import io.velocitycareerlabs.velocity_exchange_verifiers.impl.verifiers.pure_verifiers.credentialSchemaVerifier
-import io.velocitycareerlabs.velocity_exchange_verifiers.impl.verifiers.pure_verifiers.credentialStatusVerifier
-import io.velocitycareerlabs.velocity_exchange_verifiers.impl.verifiers.pure_verifiers.issClaimMatchesEitherMetadataOrCredentialIssuerVerifier
-import io.velocitycareerlabs.velocity_exchange_verifiers.impl.verifiers.pure_verifiers.issClaimMatchesMetadataVerifier
-import io.velocitycareerlabs.velocity_exchange_verifiers.impl.verifiers.pure_verifiers.kidClaimIsVelocityV2Verifier
-import io.velocitycareerlabs.velocity_exchange_verifiers.impl.verifiers.pure_verifiers.subIsDidJwkOrCnfVerifier
 
 /**
  * Verifies a Credential JWT payload using strict validation rules defined by both
@@ -44,15 +38,16 @@ import io.velocitycareerlabs.velocity_exchange_verifiers.impl.verifiers.pure_ver
  */
 fun verifyCredentialJwtPayloadStrict(
     credential: W3CCredentialJwtV1,
-    context: VerificationContext
+    context: VerificationContext,
+    verifiers: CredentialVerifiers
 ): List<VerificationError> {
     return listOfNotNull(
-        algIsSupportedVerifier(credential, context),
-        credentialSchemaVerifier(credential, context),
-        credentialStatusVerifier(credential, context),
-        issClaimMatchesEitherMetadataOrCredentialIssuerVerifier(credential, context),
-        issClaimMatchesMetadataVerifier(credential, context),
-        kidClaimIsVelocityV2Verifier(credential, context),
-        subIsDidJwkOrCnfVerifier(credential, context)
+        verifiers.algIsSupported(credential, context),
+        verifiers.credentialSchema(credential, context),
+        verifiers.credentialStatus(credential, context),
+        verifiers.issClaimMatchesEitherMetadataOrCredentialIssuer(credential, context),
+        verifiers.issClaimMatchesMetadata(credential, context),
+        verifiers.kidClaimIsVelocityV2(credential, context),
+        verifiers.subIsDidJwkOrCnf(credential, context)
     )
 }

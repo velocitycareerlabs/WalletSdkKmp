@@ -8,6 +8,23 @@
 package io.velocitycareerlabs.velocity_exchange_verifiers.api.types
 
 /**
+ * A structured group of verifiers used for validating a W3C Credential JWT under the Velocity Profile.
+ *
+ * Each verifier enforces a distinct validation rule on the credential, such as checking required fields,
+ * cryptographic algorithm support, issuer consistency, and schema conformance.
+ *
+ * This type allows verifiers to be injected for testing or customized validation behavior.
+ */
+data class CredentialVerifiers(
+    val algIsSupported: Verifier<W3CCredentialJwtV1>,
+    val credentialSchema: Verifier<W3CCredentialJwtV1>,
+    val credentialStatus: Verifier<W3CCredentialJwtV1>,
+    val issClaimMatchesEitherMetadataOrCredentialIssuer: Verifier<W3CCredentialJwtV1>,
+    val issClaimMatchesMetadata: Verifier<W3CCredentialJwtV1>,
+    val kidClaimIsVelocityV2: Verifier<W3CCredentialJwtV1>,
+    val subIsDidJwkOrCnf: Verifier<W3CCredentialJwtV1>
+)
+/**
  * Represents a reusable verification function that checks a value against one or more rules.
  *
  * A [Verifier] is a pure function that receives an input value and shared [VerificationContext],
