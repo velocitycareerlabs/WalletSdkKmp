@@ -23,27 +23,21 @@ import io.velocitycareerlabs.velocity_exchange_verifiers.impl.utils.withPath
  * @param credential The [W3CCredentialJwtV1] object containing both `header` and `payload`.
  * @param context The [VerificationContext] used for issuer metadata and error path tracking.
  *
- * @return A list of [VerificationError] with a single entry if the field is missing,
- * or an empty list if the credential is valid.
+ * @return A [VerificationError] if the field is missing, or `null` if the credential is valid.
  *
  * @see W3CCredentialJwtV1
  * @see VerificationError
  * @see VerificationContext
  */
 val credentialStatusVerifier: Verifier<W3CCredentialJwtV1> = { credential, context ->
-    val path = withPath(context, listOf("payload", "vc", "credentialStatus")).path ?: emptyList()
-
-    val credentialStatusExists = credential.payload.vc.credentialStatus != null
-
-    if (credentialStatusExists) {
-        listOf(
-            buildError(
-                code = ErrorCode.MISSING_CREDENTIAL_STATUS,
-                message = "Expected vc.credentialStatus to exist at path: ${path.joinToString(".")}",
-                path = path
-            )
+    val exists = credential.payload.vc.credentialStatus != null
+    if (!exists) {
+        buildError(
+            code = ErrorCode.MISSING_CREDENTIAL_STATUS,
+            message = "Expected vc.credentialStatus to exist",
+            path = withPath(context, listOf("payload", "vc", "credentialStatus")).path ?: emptyList()
         )
     } else {
-        emptyList()
+        null
     }
 }

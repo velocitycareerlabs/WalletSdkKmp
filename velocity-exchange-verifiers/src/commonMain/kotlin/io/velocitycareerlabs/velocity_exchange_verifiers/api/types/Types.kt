@@ -11,9 +11,9 @@ package io.velocitycareerlabs.velocity_exchange_verifiers.api.types
  * Represents a reusable verification function that checks a value against one or more rules.
  *
  * A [Verifier] is a pure function that receives an input value and shared [VerificationContext],
- * and returns a list of [VerificationError] describing any issues found.
+ * and returns a lVerificationError describing any issue found.
  */
-typealias Verifier<T> = (value: T, context: VerificationContext) -> List<VerificationError>
+typealias Verifier<T> = (T, VerificationContext) -> VerificationError?
 
 /**
  * Describes metadata about a credential issuer, typically retrieved from

@@ -23,8 +23,7 @@ import io.velocitycareerlabs.velocity_exchange_verifiers.impl.utils.withPath
  * @param credential The [W3CCredentialJwtV1] object containing both `header` and `payload`.
  * @param context The [VerificationContext] used for error path tracking and metadata access.
  *
- * @return A list of [VerificationError] containing a single error if the field is missing,
- * or an empty list if the credential is valid.
+ * @return A [VerificationError] if the field is missing, or `null` if the credential is valid.
  *
  * @see W3CCredentialJwtV1
  * @see VerificationError
@@ -32,14 +31,12 @@ import io.velocitycareerlabs.velocity_exchange_verifiers.impl.utils.withPath
  */
 val credentialSchemaVerifier: Verifier<W3CCredentialJwtV1> = { credential, context ->
     if (credential.payload.vc.credentialSchema == null) {
-        listOf(
-            buildError(
-                code = ErrorCode.MISSING_CREDENTIAL_SCHEMA,
-                message = "Expected credentialSchema in payload.vc.credentialSchema but got undefined",
-                path = withPath(context, listOf("payload", "vc", "credentialSchema")).path ?: emptyList()
-            )
+        buildError(
+            code = ErrorCode.MISSING_CREDENTIAL_SCHEMA,
+            message = "Expected credentialSchema in payload.vc.credentialSchema but got undefined",
+            path = withPath(context, listOf("payload", "vc", "credentialSchema")).path ?: emptyList()
         )
     } else {
-        emptyList()
+        null
     }
 }

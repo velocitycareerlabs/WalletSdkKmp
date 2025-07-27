@@ -4,13 +4,13 @@
  * Copyright 2022 Velocity Career Labs inc.
  * SPDX-License-Identifier: Apache-2.0
  */
-
 package io.velocitycareerlabs.velocity_exchange_verifiers.impl.verifiers.pure_verifiers
 
 import io.velocitycareerlabs.velocity_exchange_verifiers.api.types.ErrorCode
 import io.velocitycareerlabs.velocity_exchange_verifiers.api.types.Verifier
 import io.velocitycareerlabs.velocity_exchange_verifiers.api.types.W3CCredentialJwtV1
 import io.velocitycareerlabs.velocity_exchange_verifiers.impl.errors.buildError
+import io.velocitycareerlabs.velocity_exchange_verifiers.api.types.VerificationError
 
 /**
  * Verifies that the JWT's `header.alg` value is one of the supported algorithms.
@@ -25,24 +25,21 @@ import io.velocitycareerlabs.velocity_exchange_verifiers.impl.errors.buildError
  *
  * @param credential The credential JWT to verify.
  * @param context The verification context used to trace the path of the validated field.
- * @return A list containing a single [VerificationError] if validation fails, or an empty list if valid.
+ * @return A [VerificationError] if validation fails, or null if the algorithm is supported.
  *
  * @see W3CCredentialJwtV1
  * @see VerificationError
- * @see VerificationContext
  */
 val algIsSupportedVerifier: Verifier<W3CCredentialJwtV1> = { credential, context ->
     val alg = credential.header?.alg
     if (alg !in supportedAlgs) {
-        listOf(
-            buildError(
-                code = ErrorCode.INVALID_ALG,
-                message = "Unsupported alg: '$alg'",
-                path = (context.path ?: emptyList()) + listOf("header", "alg")
-            )
+        buildError(
+            code = ErrorCode.INVALID_ALG,
+            message = "Unsupported alg: '$alg'",
+            path = (context.path ?: emptyList()) + listOf("header", "alg")
         )
     } else {
-        emptyList()
+        null
     }
 }
 

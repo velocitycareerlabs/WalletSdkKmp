@@ -21,7 +21,7 @@ import io.velocitycareerlabs.velocity_exchange_verifiers.impl.utils.withPath
  *
  * @param credential The [W3CCredentialJwtV1] to validate.
  * @param context The [VerificationContext] containing issuer metadata and validation path.
- * @return A list of [VerificationError] if the issuer does not match, otherwise an empty list.
+ * @return A [VerificationError] if the issuer does not match, otherwise null.
  *
  * @see W3CCredentialJwtV1
  * @see VerificationError
@@ -29,19 +29,16 @@ import io.velocitycareerlabs.velocity_exchange_verifiers.impl.utils.withPath
  */
 val issClaimMatchesMetadataVerifier: Verifier<W3CCredentialJwtV1> =
     { credential, context ->
-        val actual = credential.payload.iss;
-        val expected = context.credentialIssuerMetadata?.iss;
-        val path = withPath(context, listOf("payload", "iss")).path ?: emptyList()
+        val actual = credential.payload.iss
+        val expected = context.credentialIssuerMetadata?.iss
 
         if (actual != expected) {
-            listOf(
-                buildError(
-                    ErrorCode.UNEXPECTED_CREDENTIAL_PAYLOAD_ISS,
-                    "Expected iss to be exactly '$expected', but got '$actual'",
-                    path
-                )
+            buildError(
+                code = ErrorCode.UNEXPECTED_CREDENTIAL_PAYLOAD_ISS,
+                message = "Expected iss to be exactly '$expected', but got '$actual'",
+                path = withPath(context, listOf("payload", "iss")).path ?: emptyList()
             )
         } else {
-            emptyList()
+            null
         }
     }

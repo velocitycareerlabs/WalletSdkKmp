@@ -21,7 +21,7 @@ import io.velocitycareerlabs.velocity_exchange_verifiers.impl.errors.buildError
  *
  * @param credential A parsed [W3CCredentialJwtV1] containing a `header` with the `kid` field.
  * @param context The [VerificationContext] used to track the current JSON path for precise error reporting.
- * @return A list containing a [VerificationError] if the `kid` is missing or invalid, or an empty list if valid.
+ * @return A [VerificationError] if the `kid` is missing or invalid, or null if valid.
  *
  * @validationRule `credential.header.kid` must start with `"did:velocity:v2"`.
  * @errorCode `INVALID_KID` — when `kid` is missing or does not begin with the required prefix.
@@ -33,14 +33,12 @@ import io.velocitycareerlabs.velocity_exchange_verifiers.impl.errors.buildError
 val kidClaimIsVelocityV2Verifier: Verifier<W3CCredentialJwtV1> = { credential, context ->
     val kid = credential.header?.kid
     if (kid == null || !kid.startsWith("did:velocity:v2")) {
-        listOf(
-            buildError(
-                code = ErrorCode.INVALID_KID,
-                message = "kid must start with 'did:velocity:v2', got '$kid'",
-                path = (context.path ?: emptyList()) + listOf("header", "kid")
-            )
+        buildError(
+            code = ErrorCode.INVALID_KID,
+            message = "kid must start with 'did:velocity:v2', got '$kid'",
+            path = (context.path ?: emptyList()) + listOf("header", "kid")
         )
     } else {
-        emptyList()
+        null
     }
 }

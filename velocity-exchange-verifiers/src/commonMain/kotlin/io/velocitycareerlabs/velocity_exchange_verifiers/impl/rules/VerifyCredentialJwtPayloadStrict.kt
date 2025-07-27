@@ -46,13 +46,13 @@ fun verifyCredentialJwtPayloadStrict(
     credential: W3CCredentialJwtV1,
     context: VerificationContext
 ): List<VerificationError> {
-    return listOf(
-        algIsSupportedVerifier,
-        credentialSchemaVerifier,
-        credentialStatusVerifier,
-        issClaimMatchesEitherMetadataOrCredentialIssuerVerifier,
-        issClaimMatchesMetadataVerifier,
-        kidClaimIsVelocityV2Verifier,
-        subIsDidJwkOrCnfVerifier
-    ).flatMap { verifier -> verifier(credential, context) }
+    return listOfNotNull(
+        algIsSupportedVerifier(credential, context),
+        credentialSchemaVerifier(credential, context),
+        credentialStatusVerifier(credential, context),
+        issClaimMatchesEitherMetadataOrCredentialIssuerVerifier(credential, context),
+        issClaimMatchesMetadataVerifier(credential, context),
+        kidClaimIsVelocityV2Verifier(credential, context),
+        subIsDidJwkOrCnfVerifier(credential, context)
+    )
 }

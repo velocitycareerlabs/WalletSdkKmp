@@ -25,7 +25,7 @@ import io.velocitycareerlabs.velocity_exchange_verifiers.impl.errors.buildError
  *
  * @param credential The parsed [W3CCredentialJwtV1] to validate.
  * @param context A [VerificationContext] object, used to trace the source of the error.
- * @return A list containing a [VerificationError] if validation fails, or an empty list if the credential is valid.
+ * @return A [VerificationError] if validation fails, or null if the credential is valid.
  *
  * @validationRule `payload.sub` must equal `"did:jwk"` **or** `payload.cnf` must be present.
  * @errorCode `SUB_OR_CNF_MISSING` — if both are missing or invalid.
@@ -39,14 +39,12 @@ val subIsDidJwkOrCnfVerifier: Verifier<W3CCredentialJwtV1> = { credential, conte
     val cnf = credential.payload.cnf
 
     if (sub != "did:jwk" && cnf == null) {
-        listOf(
-            buildError(
-                code = ErrorCode.SUB_OR_CNF_MISSING,
-                message = "Expected sub to be 'did:jwk' or cnf to be present. Got sub=$sub, cnf=${cnf?.toString() ?: "null"}",
-                path = (context.path ?: emptyList()) + "payload"
-            )
+        buildError(
+            code = ErrorCode.SUB_OR_CNF_MISSING,
+            message = "Expected sub to be 'did:jwk' or cnf to be present. Got sub=$sub, cnf=${cnf?.toString() ?: "null"}",
+            path = (context.path ?: emptyList()) + "payload"
         )
     } else {
-        emptyList()
+        null
     }
 }
