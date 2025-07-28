@@ -50,3 +50,4 @@ Pods/
 *.xcuserstate
 *.xcuserdata/
 project.xcworkspace/
+/kotlin-js-store
