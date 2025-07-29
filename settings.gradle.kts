@@ -29,4 +29,4 @@ dependencyResolutionManagement {
 }
 
 include(":composeApp")
-include(":velocity-exchange-verifiers")
+include(":velocityexchangeverifiers")
