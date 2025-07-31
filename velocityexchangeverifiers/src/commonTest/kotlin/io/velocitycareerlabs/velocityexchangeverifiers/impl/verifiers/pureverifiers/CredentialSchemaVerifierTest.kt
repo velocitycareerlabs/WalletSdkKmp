@@ -11,7 +11,6 @@ import io.velocitycareerlabs.velocityexchangeverifiers.api.types.CredentialIssue
 import io.velocitycareerlabs.velocityexchangeverifiers.api.types.ErrorCode
 import io.velocitycareerlabs.velocityexchangeverifiers.api.types.JwtHeader
 import io.velocitycareerlabs.velocityexchangeverifiers.api.types.JwtPayload
-import io.velocitycareerlabs.velocityexchangeverifiers.api.types.VcClaims
 import io.velocitycareerlabs.velocityexchangeverifiers.api.types.VerificationContext
 import io.velocitycareerlabs.velocityexchangeverifiers.api.types.W3CCredentialJwtV1
 import kotlinx.serialization.json.JsonElement
@@ -37,26 +36,37 @@ internal class CredentialSchemaVerifierTest {
     private fun buildCredential(
         credentialSchema: JsonElement? = null,
         credentialStatus: JsonElement? = null,
-    ): W3CCredentialJwtV1 =
-        W3CCredentialJwtV1(
-            header = JwtHeader(alg = "ES256"),
+    ): W3CCredentialJwtV1 {
+        val vcClaims =
+            buildMap {
+                credentialSchema?.let { put("credentialSchema", it) }
+                credentialStatus?.let { put("credentialStatus", it) }
+            }
+
+        return W3CCredentialJwtV1(
+            header = JwtHeader(mapOf("alg" to JsonPrimitive("ES256"))),
             payload =
                 JwtPayload(
-                    iss = "did:example",
-                    vc =
-                        VcClaims(
-                            credentialSchema = credentialSchema,
-                            credentialStatus = credentialStatus,
+                    claims =
+                        mapOf(
+                            "iss" to JsonPrimitive("did:example"),
+                            "vc" to JsonObject(vcClaims),
                         ),
                 ),
         )
+    }
 
     @Test
     fun `should pass when credentialSchema is present`() {
-        val credential =
-            buildCredential(
-                credentialSchema = JsonObject(mapOf("id" to JsonPrimitive("https://schema.org"), "type" to JsonPrimitive("JsonSchema"))),
+        val schemaJson =
+            JsonObject(
+                mapOf(
+                    "id" to JsonPrimitive("https://schema.org"),
+                    "type" to JsonPrimitive("JsonSchema"),
+                ),
             )
+
+        val credential = buildCredential(credentialSchema = schemaJson)
 
         val result = credentialSchemaVerifier(credential, baseContext)
 
@@ -77,14 +87,16 @@ internal class CredentialSchemaVerifierTest {
 
     @Test
     fun `should fail when vc is empty`() {
-        // vc is defined, but without credentialSchema
         val credential =
             W3CCredentialJwtV1(
-                header = JwtHeader(alg = "ES256"),
+                header = JwtHeader(mapOf("alg" to JsonPrimitive("ES256"))),
                 payload =
                     JwtPayload(
-                        iss = "did:example",
-                        vc = VcClaims(), // no credentialSchema
+                        claims =
+                            mapOf(
+                                "iss" to JsonPrimitive("did:example"),
+                                "vc" to JsonObject(emptyMap()),
+                            ),
                     ),
             )
 

@@ -11,12 +11,11 @@ import io.velocitycareerlabs.velocityexchangeverifiers.api.types.CredentialIssue
 import io.velocitycareerlabs.velocityexchangeverifiers.api.types.ErrorCode
 import io.velocitycareerlabs.velocityexchangeverifiers.api.types.JwtHeader
 import io.velocitycareerlabs.velocityexchangeverifiers.api.types.JwtPayload
-import io.velocitycareerlabs.velocityexchangeverifiers.api.types.VcClaims
 import io.velocitycareerlabs.velocityexchangeverifiers.api.types.VerificationContext
 import io.velocitycareerlabs.velocityexchangeverifiers.api.types.W3CCredentialJwtV1
 import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.buildJsonObject
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -34,22 +33,25 @@ internal class CredentialStatusVerifierTest {
         )
 
     private fun buildCredential(
-        statusValue: JsonElement? =
-            buildJsonObject {
-                put("id", JsonPrimitive("https://status.example.com"))
-            },
-    ): W3CCredentialJwtV1 =
-        W3CCredentialJwtV1(
-            header = JwtHeader(alg = "ES256"),
+        statusValue: JsonElement? = JsonObject(mapOf("id" to JsonPrimitive("https://status.example.com"))),
+    ): W3CCredentialJwtV1 {
+        val vcClaims =
+            buildMap {
+                statusValue?.let { put("credentialStatus", it) }
+            }
+
+        return W3CCredentialJwtV1(
+            header = JwtHeader(mapOf("alg" to JsonPrimitive("ES256"))),
             payload =
                 JwtPayload(
-                    iss = "did:example",
-                    vc =
-                        VcClaims(
-                            credentialStatus = statusValue,
+                    claims =
+                        mapOf(
+                            "iss" to JsonPrimitive("did:example"),
+                            "vc" to JsonObject(vcClaims),
                         ),
                 ),
         )
+    }
 
     @Test
     fun `should pass when credentialStatus is present`() {
@@ -62,13 +64,18 @@ internal class CredentialStatusVerifierTest {
 
     @Test
     fun `should fail when credentialStatus is undefined`() {
+        val vcClaims = JsonObject(emptyMap())
+
         val credential =
             W3CCredentialJwtV1(
-                header = JwtHeader(alg = "ES256"),
+                header = JwtHeader(mapOf("alg" to JsonPrimitive("ES256"))),
                 payload =
                     JwtPayload(
-                        iss = "did:example",
-                        vc = VcClaims(credentialStatus = null),
+                        claims =
+                            mapOf(
+                                "iss" to JsonPrimitive("did:example"),
+                                "vc" to vcClaims,
+                            ),
                     ),
             )
 
@@ -83,11 +90,14 @@ internal class CredentialStatusVerifierTest {
     fun `should fail when vc is missing all fields`() {
         val credential =
             W3CCredentialJwtV1(
-                header = JwtHeader(alg = "ES256"),
+                header = JwtHeader(mapOf("alg" to JsonPrimitive("ES256"))),
                 payload =
                     JwtPayload(
-                        iss = "did:example",
-                        vc = VcClaims(),
+                        claims =
+                            mapOf(
+                                "iss" to JsonPrimitive("did:example"),
+                                "vc" to JsonObject(emptyMap()),
+                            ),
                     ),
             )
 
@@ -102,17 +112,18 @@ internal class CredentialStatusVerifierTest {
     fun `should include full path when nested in a context`() {
         val credential =
             W3CCredentialJwtV1(
-                header = JwtHeader(alg = "ES256"),
+                header = JwtHeader(mapOf("alg" to JsonPrimitive("ES256"))),
                 payload =
                     JwtPayload(
-                        iss = "did:example",
-                        vc = VcClaims(),
+                        claims =
+                            mapOf(
+                                "iss" to JsonPrimitive("did:example"),
+                                "vc" to JsonObject(emptyMap()),
+                            ),
                     ),
             )
-        val nestedContext =
-            baseContext.copy(
-                path = listOf("credentials", 0),
-            )
+
+        val nestedContext = baseContext.copy(path = listOf("credentials", 0))
 
         val result = credentialStatusVerifier(credential, nestedContext)
 

@@ -30,7 +30,7 @@ import io.velocitycareerlabs.velocityexchangeverifiers.impl.utils.withPath
  * @see VerificationContext
  */
 internal val credentialSchemaVerifier: Verifier<W3CCredentialJwtV1> = { credential, context ->
-    if (credential.payload.vc.credentialSchema == null) {
+    if (credential.payload.vc?.credentialSchema == null) {
         buildError(
             code = ErrorCode.MISSING_CREDENTIAL_SCHEMA,
             message = "Expected credentialSchema in payload.vc.credentialSchema but got undefined",

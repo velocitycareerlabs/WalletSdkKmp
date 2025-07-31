@@ -11,13 +11,16 @@ import io.velocitycareerlabs.velocityexchangeverifiers.api.types.CredentialIssue
 import io.velocitycareerlabs.velocityexchangeverifiers.api.types.ErrorCode
 import io.velocitycareerlabs.velocityexchangeverifiers.api.types.JwtHeader
 import io.velocitycareerlabs.velocityexchangeverifiers.api.types.JwtPayload
-import io.velocitycareerlabs.velocityexchangeverifiers.api.types.VcClaims
 import io.velocitycareerlabs.velocityexchangeverifiers.api.types.VerificationContext
 import io.velocitycareerlabs.velocityexchangeverifiers.api.types.W3CCredentialJwtV1
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 internal class AlgIsSupportedVerifierTest {
     private val baseContext =
@@ -30,15 +33,25 @@ internal class AlgIsSupportedVerifierTest {
                 ),
         )
 
-    private fun makeCredential(alg: String?): W3CCredentialJwtV1 =
-        W3CCredentialJwtV1(
-            header = if (alg != null) JwtHeader(alg = alg) else null,
-            payload =
-                JwtPayload(
-                    iss = "did:example",
-                    vc = VcClaims(),
-                ),
+    private fun makeCredential(alg: String?): W3CCredentialJwtV1 {
+        val headerClaims: Map<String, JsonElement> =
+            if (alg != null) {
+                mapOf("alg" to JsonPrimitive(alg))
+            } else {
+                emptyMap()
+            }
+
+        val payloadClaims: Map<String, JsonElement> =
+            mapOf(
+                "iss" to JsonPrimitive("did:example"),
+                "vc" to JsonObject(emptyMap()),
+            )
+
+        return W3CCredentialJwtV1(
+            header = JwtHeader(headerClaims),
+            payload = JwtPayload(payloadClaims),
         )
+    }
 
     @Test
     fun `should pass for supported alg values`() {
@@ -60,7 +73,7 @@ internal class AlgIsSupportedVerifierTest {
 
             assertNotNull(result)
             assertEquals(ErrorCode.INVALID_ALG, result.code)
-            assertEquals(result.message.contains(alg), true)
+            assertTrue(result.message.contains(alg), "Expected message to contain $alg")
             assertEquals(listOf("header", "alg"), result.path)
         }
     }
@@ -73,7 +86,7 @@ internal class AlgIsSupportedVerifierTest {
 
         assertNotNull(result)
         assertEquals(ErrorCode.INVALID_ALG, result.code)
-        assertEquals(result.message.contains("null"), true)
+        assertTrue(result.message.contains("null"), "Expected message to mention 'null'")
         assertEquals(listOf("header", "alg"), result.path)
     }
 }

@@ -8,7 +8,6 @@
 package io.velocitycareerlabs.velocityexchangeverifiers.impl.utils
 
 import io.velocitycareerlabs.velocityexchangeverifiers.api.types.VerificationContext
-import kotlinx.serialization.json.Json
 
 /**
  * Appends a nested path segment to an existing [VerificationContext].
@@ -40,8 +39,3 @@ internal fun withPath(
     context.copy(
         path = (context.path ?: emptyList()) + pathExtension,
     )
-
-inline fun <reified T> fromJson(jsonString: String): T {
-    val json = Json { ignoreUnknownKeys = true }
-    return json.decodeFromString(jsonString)
-}

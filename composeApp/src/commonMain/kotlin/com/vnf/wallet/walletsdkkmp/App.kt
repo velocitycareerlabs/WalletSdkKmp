@@ -18,9 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.vnf.wallet.walletsdkkmp.ui.LinkButton
 import io.velocitycareerlabs.velocityexchangeverifiers.api.verifyCredentialEndpointResponse
-import org.jetbrains.compose.ui.tooling.preview.Preview
 
-@Preview
 @Composable
 fun App() {
     MaterialTheme {
@@ -37,7 +35,6 @@ fun App() {
             MainMenu(onMessage = { message = it })
         }
 
-        // Overlay message box
         if (message != null) {
             AlertDialog(
                 onDismissRequest = { message = null },

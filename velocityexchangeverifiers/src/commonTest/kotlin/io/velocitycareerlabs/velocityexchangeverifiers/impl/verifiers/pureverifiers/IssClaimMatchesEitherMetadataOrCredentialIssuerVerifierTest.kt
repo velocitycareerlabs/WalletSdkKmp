@@ -11,9 +11,10 @@ import io.velocitycareerlabs.velocityexchangeverifiers.api.types.CredentialIssue
 import io.velocitycareerlabs.velocityexchangeverifiers.api.types.ErrorCode
 import io.velocitycareerlabs.velocityexchangeverifiers.api.types.JwtHeader
 import io.velocitycareerlabs.velocityexchangeverifiers.api.types.JwtPayload
-import io.velocitycareerlabs.velocityexchangeverifiers.api.types.VcClaims
 import io.velocitycareerlabs.velocityexchangeverifiers.api.types.VerificationContext
 import io.velocitycareerlabs.velocityexchangeverifiers.api.types.W3CCredentialJwtV1
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -33,11 +34,14 @@ internal class IssClaimMatchesEitherMetadataOrCredentialIssuerVerifierTest {
 
     private fun makeCredential(iss: String): W3CCredentialJwtV1 =
         W3CCredentialJwtV1(
-            header = JwtHeader(alg = "ES256"),
+            header = JwtHeader(mapOf("alg" to JsonPrimitive("ES256"))),
             payload =
                 JwtPayload(
-                    iss = iss,
-                    vc = VcClaims(),
+                    claims =
+                        mapOf(
+                            "iss" to JsonPrimitive(iss),
+                            "vc" to JsonObject(emptyMap()),
+                        ),
                 ),
         )
 

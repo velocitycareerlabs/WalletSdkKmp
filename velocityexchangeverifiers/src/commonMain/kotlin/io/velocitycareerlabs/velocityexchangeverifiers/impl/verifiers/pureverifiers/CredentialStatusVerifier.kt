@@ -30,7 +30,7 @@ import io.velocitycareerlabs.velocityexchangeverifiers.impl.utils.withPath
  * @see VerificationContext
  */
 internal val credentialStatusVerifier: Verifier<W3CCredentialJwtV1> = { credential, context ->
-    val exists = credential.payload.vc.credentialStatus != null
+    val exists = credential.payload.vc?.credentialStatus != null
     if (!exists) {
         buildError(
             code = ErrorCode.MISSING_CREDENTIAL_STATUS,

@@ -11,10 +11,10 @@ import io.velocitycareerlabs.velocityexchangeverifiers.api.types.CredentialIssue
 import io.velocitycareerlabs.velocityexchangeverifiers.api.types.ErrorCode
 import io.velocitycareerlabs.velocityexchangeverifiers.api.types.JwtHeader
 import io.velocitycareerlabs.velocityexchangeverifiers.api.types.JwtPayload
-import io.velocitycareerlabs.velocityexchangeverifiers.api.types.VcClaims
 import io.velocitycareerlabs.velocityexchangeverifiers.api.types.VerificationContext
 import io.velocitycareerlabs.velocityexchangeverifiers.api.types.W3CCredentialJwtV1
 import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
 import kotlin.test.Test
@@ -37,17 +37,20 @@ internal class SubIsDidJwkOrCnfVerifierTest {
     private fun makeCredential(
         sub: String? = null,
         cnf: JsonElement? = null,
-    ): W3CCredentialJwtV1 =
-        W3CCredentialJwtV1(
-            header = JwtHeader(alg = "ES256"),
-            payload =
-                JwtPayload(
-                    iss = "did:example",
-                    sub = sub,
-                    cnf = cnf,
-                    vc = VcClaims(),
-                ),
+    ): W3CCredentialJwtV1 {
+        val payloadMap =
+            buildMap<String, JsonElement> {
+                put("iss", JsonPrimitive("did:example"))
+                put("vc", JsonObject(emptyMap()))
+                if (sub != null) put("sub", JsonPrimitive(sub))
+                if (cnf != null) put("cnf", cnf)
+            }
+
+        return W3CCredentialJwtV1(
+            header = JwtHeader(mapOf("alg" to JsonPrimitive("ES256"))),
+            payload = JwtPayload(payloadMap),
         )
+    }
 
     @Test
     fun `should pass if sub is did colon jwk`() {
@@ -62,7 +65,15 @@ internal class SubIsDidJwkOrCnfVerifierTest {
     fun `should pass if cnf is defined and sub is something else`() {
         val cnf =
             buildJsonObject {
-                put("jwk", JsonPrimitive(""))
+                put(
+                    "jwk",
+                    buildJsonObject {
+                        put("kty", JsonPrimitive("EC"))
+                        put("crv", JsonPrimitive("secp256k1"))
+                        put("x", JsonPrimitive("fakeX"))
+                        put("y", JsonPrimitive("fakeY"))
+                    },
+                )
             }
         val credential = makeCredential(sub = "some-other-sub", cnf = cnf)
 

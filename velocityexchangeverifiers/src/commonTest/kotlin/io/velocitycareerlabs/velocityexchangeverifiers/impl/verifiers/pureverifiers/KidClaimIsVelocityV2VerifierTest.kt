@@ -11,9 +11,10 @@ import io.velocitycareerlabs.velocityexchangeverifiers.api.types.CredentialIssue
 import io.velocitycareerlabs.velocityexchangeverifiers.api.types.ErrorCode
 import io.velocitycareerlabs.velocityexchangeverifiers.api.types.JwtHeader
 import io.velocitycareerlabs.velocityexchangeverifiers.api.types.JwtPayload
-import io.velocitycareerlabs.velocityexchangeverifiers.api.types.VcClaims
 import io.velocitycareerlabs.velocityexchangeverifiers.api.types.VerificationContext
 import io.velocitycareerlabs.velocityexchangeverifiers.api.types.W3CCredentialJwtV1
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -31,15 +32,24 @@ internal class KidClaimIsVelocityV2VerifierTest {
                 ),
         )
 
-    private fun makeCredential(kid: String? = null): W3CCredentialJwtV1 =
-        W3CCredentialJwtV1(
-            header = JwtHeader(alg = "ES256", kid = kid),
-            payload =
-                JwtPayload(
-                    iss = "did:example",
-                    vc = VcClaims(),
-                ),
+    private fun makeCredential(kid: String? = null): W3CCredentialJwtV1 {
+        val headerMap =
+            buildMap {
+                put("alg", JsonPrimitive("ES256"))
+                if (kid != null) put("kid", JsonPrimitive(kid))
+            }
+
+        val payloadMap =
+            mapOf(
+                "iss" to JsonPrimitive("did:example"),
+                "vc" to JsonObject(emptyMap()),
+            )
+
+        return W3CCredentialJwtV1(
+            header = JwtHeader(headerMap),
+            payload = JwtPayload(claims = payloadMap),
         )
+    }
 
     @Test
     fun `should pass when kid starts with did colon velocity colon v2`() {

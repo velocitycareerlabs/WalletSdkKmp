@@ -43,7 +43,7 @@ internal val issClaimMatchesEitherMetadataOrCredentialIssuerVerifier: Verifier<W
             )
 
         val actualIss = credential.payload.iss
-        if (actualIss.isBlank() || actualIss !in allowedValues) {
+        if (actualIss?.isBlank() == true || actualIss !in allowedValues) {
             buildError(
                 ErrorCode.UNEXPECTED_CREDENTIAL_PAYLOAD_ISS,
                 "Expected iss to be one of [${allowedValues.joinToString()}], but got '$actualIss'",

@@ -1,13 +1,12 @@
+import org.jetbrains.kotlin.gradle.plugin.mpp.apple.XCFramework
+
 plugins {
     alias(libs.plugins.androidLibrary) apply false
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidKotlinMultiplatformLibrary)
     alias(libs.plugins.kotlinx.serialization)
     alias(libs.plugins.mavenPublish)
-//    NOTE:
-//    The org.jetbrains.kotlin.native.cocoapods plugin:
-//    •	Is already bundled with kotlinMultiplatform
-//    •	Must not be applied again
+    alias(libs.plugins.cocoapods)
 }
 
 kotlin {
@@ -20,8 +19,7 @@ kotlin {
         compileSdk = 36
         minSdk = 24
 
-        withHostTestBuilder {
-        }
+        withHostTestBuilder { }
 
         withDeviceTestBuilder {
             sourceSetTreeName = "test"
@@ -39,21 +37,26 @@ kotlin {
     // https://developer.android.com/kotlin/multiplatform/migrate
     val xcfName = "velocityExchangeVerifiersKit"
 
+    val xcf = XCFramework()
+
     iosX64 {
         binaries.framework {
             baseName = xcfName
+            xcf.add(this)
         }
     }
 
     iosArm64 {
         binaries.framework {
             baseName = xcfName
+            xcf.add(this)
         }
     }
 
     iosSimulatorArm64 {
         binaries.framework {
             baseName = xcfName
+            xcf.add(this)
         }
     }
 
@@ -65,15 +68,30 @@ kotlin {
     }
 
     // WASM target — added to support composeApp/wasmJsMain
+//    wasmJs {
+//        browser()
+//        binaries.executable()
+//    }
     wasmJs {
-        browser()
+        browser {
+            commonWebpackConfig {
+                cssSupport { }
+            }
+        }
+        binaries.executable()
     }
 
-    // Source set declarations.
-    // Declaring a target automatically creates a source set with the same name. By default, the
-    // Kotlin Gradle Plugin creates additional source sets that depend on each other, since it is
-    // common to share sources between related targets.
-    // See: https://kotlinlang.org/docs/multiplatform-hierarchy.html
+    cocoapods {
+        version = "1.0.0"
+        summary = "KMP SDK for credential verification"
+        homepage = "https://github.com/velocitycareerlabs"
+        ios.deploymentTarget = "13.0"
+        framework {
+            baseName = xcfName
+            isStatic = false
+        }
+    }
+
     sourceSets {
         commonMain {
             dependencies {
@@ -115,4 +133,14 @@ kotlin {
             }
         }
     }
+}
+
+tasks.register("assembleAllTargets") {
+    dependsOn(
+        "assemble",
+        "wasmJsJar",
+        "wasmJsBrowserProductionWebpack",
+        "jsBrowserProductionWebpack",
+        "assembleXCFramework"
+    )
 }
