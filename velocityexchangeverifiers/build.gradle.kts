@@ -61,7 +61,11 @@ kotlin {
     }
 
     js(IR) {
-        browser()
+        browser {
+            commonWebpackConfig {
+                sourceMaps = true
+            }
+        }
         nodejs()
         binaries.executable()
     }
