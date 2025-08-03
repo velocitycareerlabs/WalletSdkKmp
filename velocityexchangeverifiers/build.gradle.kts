@@ -36,7 +36,6 @@ kotlin {
     // project can be found here:
     // https://developer.android.com/kotlin/multiplatform/migrate
     val xcfName = "velocityExchangeVerifiersKit"
-
     val xcf = XCFramework()
 
     iosX64 {
@@ -60,18 +59,12 @@ kotlin {
         }
     }
 
-    // JS target — added to generate a JavaScript library that can be used in web applications
     js(IR) {
         browser()
         nodejs()
         binaries.executable()
     }
 
-    // WASM target — added to support composeApp/wasmJsMain
-//    wasmJs {
-//        browser()
-//        binaries.executable()
-//    }
     wasmJs {
         browser {
             commonWebpackConfig {
@@ -97,6 +90,7 @@ kotlin {
             dependencies {
                 implementation(libs.kotlin.stdlib)
                 implementation(libs.kotlinx.serialization.json)
+                implementation(libs.kotlinx.coroutines.core)
                 // Add KMP dependencies here
             }
         }
@@ -141,6 +135,6 @@ tasks.register("assembleAllTargets") {
         "wasmJsJar",
         "wasmJsBrowserProductionWebpack",
         "jsBrowserProductionWebpack",
-        "assembleXCFramework"
+        "assembleXCFramework",
     )
 }

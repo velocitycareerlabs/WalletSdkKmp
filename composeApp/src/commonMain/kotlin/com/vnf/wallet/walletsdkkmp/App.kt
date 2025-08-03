@@ -12,12 +12,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.vnf.wallet.walletsdkkmp.ui.LinkButton
-import io.velocitycareerlabs.velocityexchangeverifiers.api.verifyCredentialEndpointResponse
+import io.velocitycareerlabs.velocityexchangeverifiers.api.VerifiersApi.verifyCredentialEndpointResponse
+import kotlinx.coroutines.launch
 
 @Composable
 fun App() {
@@ -52,32 +54,34 @@ fun App() {
 
 @Composable
 fun MainMenu(onMessage: (String) -> Unit) {
+    val coroutineScope = rememberCoroutineScope()
+
     Column(modifier = Modifier.padding(16.dp)) {
         LinkButton(
             text = "Verify Credential Endpoint Response",
-            onClick = { onVerifyCredentialEndpointResponse(onMessage) },
+            onClick = {
+                coroutineScope.launch {
+                    val errors =
+                        verifyCredentialEndpointResponse(
+                            response = Constants.CredentialEndpointResponse,
+                            context = Constants.BaseContext,
+                        )
+
+                    val message =
+                        if (errors.isEmpty()) {
+                            "✅ Verification successful. No errors found."
+                        } else {
+                            buildString {
+                                append("❌ Verification failed:\n")
+                                errors.forEach { error ->
+                                    append("- ${error.code}: ${error.message}\n")
+                                }
+                            }
+                        }
+
+                    onMessage(message)
+                }
+            },
         )
     }
-}
-
-fun onVerifyCredentialEndpointResponse(onMessage: (String) -> Unit) {
-    val errors =
-        verifyCredentialEndpointResponse(
-            response = Constants.CredentialEndpointResponse,
-            context = Constants.BaseContext,
-        )
-
-    val message =
-        if (errors.isEmpty()) {
-            "✅ Verification successful. No errors found."
-        } else {
-            buildString {
-                append("❌ Verification failed:\n")
-                errors.forEach { error ->
-                    append("- ${error.code}: ${error.message}\n")
-                }
-            }
-        }
-
-    onMessage(message)
 }

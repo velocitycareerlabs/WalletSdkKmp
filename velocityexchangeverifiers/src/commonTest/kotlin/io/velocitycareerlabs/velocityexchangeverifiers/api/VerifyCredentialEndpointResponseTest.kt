@@ -7,6 +7,7 @@
 
 package io.velocitycareerlabs.velocityexchangeverifiers.api
 
+import io.velocitycareerlabs.velocityexchangeverifiers.api.VerifiersApi.verifyCredentialEndpointResponse
 import io.velocitycareerlabs.velocityexchangeverifiers.api.types.CredentialEndpointResponse
 import io.velocitycareerlabs.velocityexchangeverifiers.api.types.CredentialIssuerMetadata
 import io.velocitycareerlabs.velocityexchangeverifiers.api.types.CredentialVerifiers
