@@ -5,19 +5,13 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-@file:JsExport
-@file:OptIn(ExperimentalJsExport::class)
-
 package io.velocitycareerlabs.velocityexchangeverifiers.api
 
-import io.velocitycareerlabs.velocityexchangeverifiers.api.VerifiersApi.defaultCredentialVerifiers
-import io.velocitycareerlabs.velocityexchangeverifiers.api.VerifiersApi.verifyCredentialEndpointResponse
 import io.velocitycareerlabs.velocityexchangeverifiers.api.types.CredentialEndpointResponse
-import io.velocitycareerlabs.velocityexchangeverifiers.api.types.CredentialIssuerMetadata
-import io.velocitycareerlabs.velocityexchangeverifiers.api.types.VerificationContext
 import io.velocitycareerlabs.velocityexchangeverifiers.api.types.VerificationContextJs
 import io.velocitycareerlabs.velocityexchangeverifiers.api.types.VerificationErrorJs
-import io.velocitycareerlabs.velocityexchangeverifiers.api.types.toJs
+import io.velocitycareerlabs.velocityexchangeverifiers.api.types.toInternal
+import io.velocitycareerlabs.velocityexchangeverifiers.api.types.toVerificationErrorJs
 import kotlin.js.ExperimentalJsExport
 import kotlin.js.JsExport
 import kotlin.js.JsName
@@ -25,6 +19,7 @@ import kotlin.js.JsName
 /**
  * JavaScript/TypeScript-friendly access point to credential verification.
  */
+@OptIn(ExperimentalJsExport::class)
 @JsExport
 object VerifiersApiJs {
     /**
@@ -39,19 +34,14 @@ object VerifiersApiJs {
         response: CredentialEndpointResponse,
         contextJs: VerificationContextJs,
     ): Array<VerificationErrorJs> {
-        val internalContext =
-            VerificationContext(
-                credentialIssuerMetadata =
-                    contextJs.credentialIssuerMetadata?.let {
-                        CredentialIssuerMetadata(it.iss, it.credentialIssuer)
-                    },
-                path = contextJs.path?.toList(),
-            )
+        val internalContext = contextJs.toInternal()
 
-        return verifyCredentialEndpointResponse(
-            response = response,
-            context = internalContext,
-            verifiers = defaultCredentialVerifiers,
-        ).map { it.toJs() }.toTypedArray()
+        return VerifiersApi
+            .verifyCredentialEndpointResponse(
+                response = response,
+                context = internalContext,
+                verifiers = VerifiersApi.defaultCredentialVerifiers,
+            ).map { it.toVerificationErrorJs() }
+            .toTypedArray()
     }
 }

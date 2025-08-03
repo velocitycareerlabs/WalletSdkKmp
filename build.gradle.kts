@@ -1,3 +1,6 @@
+import org.jlleitschuh.gradle.ktlint.KtlintExtension
+import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
+
 plugins {
     // this is necessary to avoid the plugins to be loaded multiple times
     // in each subproject's classloader
@@ -19,11 +22,11 @@ subprojects {
         ) {
             apply(plugin = "org.jlleitschuh.gradle.ktlint")
 
-            extensions.configure<org.jlleitschuh.gradle.ktlint.KtlintExtension> {
+            extensions.configure<KtlintExtension> {
                 android.set(true)
                 ignoreFailures.set(false)
                 reporters {
-                    reporter(org.jlleitschuh.gradle.ktlint.reporter.ReporterType.PLAIN)
+                    reporter(ReporterType.PLAIN)
                 }
                 filter {
                     exclude("**/build/**")

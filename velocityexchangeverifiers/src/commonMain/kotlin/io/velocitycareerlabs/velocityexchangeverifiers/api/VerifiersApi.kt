@@ -20,9 +20,6 @@ import io.velocitycareerlabs.velocityexchangeverifiers.impl.verifiers.pureverifi
 import io.velocitycareerlabs.velocityexchangeverifiers.impl.verifiers.pureverifiers.issClaimMatchesMetadataVerifier
 import io.velocitycareerlabs.velocityexchangeverifiers.impl.verifiers.pureverifiers.kidClaimIsVelocityV2Verifier
 import io.velocitycareerlabs.velocityexchangeverifiers.impl.verifiers.pureverifiers.subIsDidJwkOrCnfVerifier
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.coroutineScope
 
 object VerifiersApi {
     /**
@@ -49,26 +46,41 @@ object VerifiersApi {
      * - Fields like `notification_id` are **not yet validated**.
      * - Deferred issuance (`transaction_id`, `interval`) is **not supported here**.
      */
-    suspend fun verifyCredentialEndpointResponse(
+    fun verifyCredentialEndpointResponse(
         response: CredentialEndpointResponse,
         context: VerificationContext,
         verifiers: CredentialVerifiers = defaultCredentialVerifiers,
-    ): List<VerificationError> =
-        coroutineScope {
-            val credentials = response.credentials ?: return@coroutineScope emptyList()
+    ): List<VerificationError> {
+        val credentials = response.credentials ?: return emptyList()
 
-            credentials
-                .mapIndexed { index, credential ->
-                    async {
-                        verifyCredentialJwtPayloadStrict(
-                            credential = credential,
-                            context = withPath(context, listOf("credentials", index)),
-                            verifiers = verifiers,
-                        )
-                    }
-                }.awaitAll()
-                .flatten()
+        return credentials.flatMapIndexed { index, credential ->
+            verifyCredentialJwtPayloadStrict(
+                credential = credential,
+                context = withPath(context, listOf("credentials", index)),
+                verifiers = verifiers,
+            )
         }
+    }
+//    suspend fun verifyCredentialEndpointResponse(
+//        response: CredentialEndpointResponse,
+//        context: VerificationContext,
+//        verifiers: CredentialVerifiers = defaultCredentialVerifiers,
+//    ): List<VerificationError> =
+//        coroutineScope {
+//            val credentials = response.credentials ?: return@coroutineScope emptyList()
+//
+//            credentials
+//                .mapIndexed { index, credential ->
+//                    async {
+//                        verifyCredentialJwtPayloadStrict(
+//                            credential = credential,
+//                            context = withPath(context, listOf("credentials", index)),
+//                            verifiers = verifiers,
+//                        )
+//                    }
+//                }.awaitAll()
+//                .flatten()
+//        }
 
     /**
      * The default set of verifiers that enforce the Velocity profile rules for credential validation.

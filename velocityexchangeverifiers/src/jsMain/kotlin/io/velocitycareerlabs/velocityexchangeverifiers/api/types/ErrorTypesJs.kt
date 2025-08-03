@@ -5,19 +5,15 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-@file:JsExport
-@file:OptIn(ExperimentalJsExport::class)
-
 package io.velocitycareerlabs.velocityexchangeverifiers.api.types
 
-import kotlin.js.ExperimentalJsExport
 import kotlin.js.JsExport
 import kotlin.js.JsName
 
 /**
  * JavaScript/TypeScript-friendly version of [VerificationError].
  */
-@OptIn(ExperimentalJsExport::class)
+@JsExport
 @JsName("VerificationErrorJs")
 data class VerificationErrorJs(
     val code: String,
@@ -46,10 +42,9 @@ data class VerificationErrorJs(
 }
 
 /**
- * Converts a [VerificationError] into a [VerificationErrorJs] object for use in JS/TS environments.
+ * Converts a [VerificationError] into a [VerificationErrorJs] for JS/TS interop.
  */
-@JsName("toVerificationErrorJs")
-fun VerificationError.toJs(): VerificationErrorJs =
+internal fun VerificationError.toVerificationErrorJs(): VerificationErrorJs =
     VerificationErrorJs(
         code = this.code.code,
         message = this.message,

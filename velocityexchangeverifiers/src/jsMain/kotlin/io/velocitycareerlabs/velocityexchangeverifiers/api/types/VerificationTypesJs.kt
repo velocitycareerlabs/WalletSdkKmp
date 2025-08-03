@@ -5,14 +5,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-@file:JsExport
-@file:OptIn(ExperimentalJsExport::class)
-
 package io.velocitycareerlabs.velocityexchangeverifiers.api.types
 
-import kotlin.js.ExperimentalJsExport
 import kotlin.js.JsExport
-import kotlin.js.JsName
 
 /**
  * JavaScript/TypeScript-friendly version of [CredentialIssuerMetadata].
@@ -33,14 +28,28 @@ data class VerificationContextJs(
 )
 
 /**
- * Maps a [VerificationContext] to a JS-compatible [VerificationContextJs].
+ * Converts internal Kotlin VerificationContext into its JS-friendly counterpart.
  */
-@JsName("toVerificationContextJs")
-fun VerificationContext.toJs(): VerificationContextJs =
+internal fun VerificationContext.toVerificationContextJs(): VerificationContextJs =
     VerificationContextJs(
-        credentialIssuerMetadata =
-            this.credentialIssuerMetadata?.let {
-                CredentialIssuerMetadataJs(it.iss, it.credentialIssuer)
-            },
+        credentialIssuerMetadata = this.credentialIssuerMetadata?.toCredentialIssuerMetadataJs(),
         path = this.path?.map { it.toString() }?.toTypedArray(),
+    )
+
+internal fun CredentialIssuerMetadata.toCredentialIssuerMetadataJs(): CredentialIssuerMetadataJs =
+    CredentialIssuerMetadataJs(
+        iss = this.iss,
+        credentialIssuer = this.credentialIssuer,
+    )
+
+internal fun CredentialIssuerMetadataJs.toInternal(): CredentialIssuerMetadata =
+    CredentialIssuerMetadata(
+        iss = this.iss,
+        credentialIssuer = this.credentialIssuer,
+    )
+
+internal fun VerificationContextJs.toInternal(): VerificationContext =
+    VerificationContext(
+        credentialIssuerMetadata = this.credentialIssuerMetadata?.toInternal(),
+        path = this.path?.toList(),
     )
