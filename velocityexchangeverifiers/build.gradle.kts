@@ -158,6 +158,7 @@ tasks.register("assembleAllTargets") {
         "wasmJsJar",
         "wasmJsBrowserProductionWebpack",
         "jsBrowserProductionWebpack",
+        "jsJar",
         "assembleXCFramework",
     )
 }

@@ -7,12 +7,16 @@
 
 package io.velocitycareerlabs.velocityexchangeverifiers.api.types
 
+import kotlin.js.ExperimentalJsExport
 import kotlin.js.JsExport
+import kotlin.js.JsName
 
 /**
  * JavaScript/TypeScript-friendly version of [CredentialIssuerMetadata].
  */
+@OptIn(ExperimentalJsExport::class)
 @JsExport
+@JsName("CredentialIssuerMetadataJs")
 data class CredentialIssuerMetadataJs(
     val iss: String,
     val credentialIssuer: String? = null,
@@ -21,15 +25,14 @@ data class CredentialIssuerMetadataJs(
 /**
  * JavaScript/TypeScript-friendly version of [VerificationContext].
  */
+@OptIn(ExperimentalJsExport::class)
 @JsExport
+@JsName("VerificationContextJs")
 data class VerificationContextJs(
     val credentialIssuerMetadata: CredentialIssuerMetadataJs? = null,
     val path: Array<String>? = null,
 )
 
-/**
- * Converts internal Kotlin VerificationContext into its JS-friendly counterpart.
- */
 internal fun VerificationContext.toVerificationContextJs(): VerificationContextJs =
     VerificationContextJs(
         credentialIssuerMetadata = this.credentialIssuerMetadata?.toCredentialIssuerMetadataJs(),

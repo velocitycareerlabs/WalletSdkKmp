@@ -9,8 +9,6 @@ package io.velocitycareerlabs.velocityexchangeverifiers.api
 
 import io.velocitycareerlabs.velocityexchangeverifiers.api.types.W3CCredentialJwtV1Js
 import io.velocitycareerlabs.velocityexchangeverifiers.api.types.toW3CCredentialJwtV1Js
-import kotlin.js.ExperimentalJsExport
-import kotlin.js.JsExport
 import kotlin.js.JsName
 
 /**
@@ -22,8 +20,6 @@ import kotlin.js.JsName
  *
  * Only exports JS-compatible types to avoid Kotlin-native leaks.
  */
-@OptIn(ExperimentalJsExport::class)
-@JsExport
 object CredentialJwtParserJs {
     /**
      * Parses a credential JWT string into a JS-friendly [W3CCredentialJwtV1Js] object.

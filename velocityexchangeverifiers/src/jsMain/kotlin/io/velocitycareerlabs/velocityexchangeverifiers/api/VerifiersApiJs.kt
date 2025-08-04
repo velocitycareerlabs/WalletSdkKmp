@@ -12,15 +12,11 @@ import io.velocitycareerlabs.velocityexchangeverifiers.api.types.VerificationCon
 import io.velocitycareerlabs.velocityexchangeverifiers.api.types.VerificationErrorJs
 import io.velocitycareerlabs.velocityexchangeverifiers.api.types.toInternal
 import io.velocitycareerlabs.velocityexchangeverifiers.api.types.toVerificationErrorJs
-import kotlin.js.ExperimentalJsExport
-import kotlin.js.JsExport
 import kotlin.js.JsName
 
 /**
  * JavaScript/TypeScript-friendly access point to credential verification.
  */
-@OptIn(ExperimentalJsExport::class)
-@JsExport
 object VerifiersApiJs {
     /**
      * Verifies a [CredentialEndpointResponse] against the Velocity ruleset.
@@ -45,12 +41,3 @@ object VerifiersApiJs {
             .toTypedArray()
     }
 }
-
-@Suppress("unused")
-@OptIn(ExperimentalJsExport::class)
-@JsExport
-val forceJsObjects =
-    listOf(
-        VerifiersApiJs,
-        CredentialJwtParserJs,
-    )
