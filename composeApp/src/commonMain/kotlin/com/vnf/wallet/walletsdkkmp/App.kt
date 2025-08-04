@@ -18,8 +18,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.vnf.wallet.walletsdkkmp.ui.LinkButton
-import io.velocitycareerlabs.velocityexchangeverifiers.api.VerifiersApi.verifyCredentialEndpointResponse
+import io.velocitycareerlabs.velocityexchangeverifiers.api.VerifiersApi
 import kotlinx.coroutines.launch
+
+val verifiersApi = VerifiersApi()
 
 @Composable
 fun App() {
@@ -62,7 +64,7 @@ fun MainMenu(onMessage: (String) -> Unit) {
             onClick = {
                 coroutineScope.launch {
                     val errors =
-                        verifyCredentialEndpointResponse(
+                        verifiersApi.verifyCredentialEndpointResponse(
                             response = Constants.CredentialEndpointResponse,
                             context = Constants.BaseContext,
                         )

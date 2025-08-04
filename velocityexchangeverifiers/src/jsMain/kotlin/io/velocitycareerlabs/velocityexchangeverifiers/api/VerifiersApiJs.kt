@@ -23,8 +23,9 @@ import kotlin.js.JsName
  *
  * Wraps [VerifiersApi] with JS-compatible parameters and return types.
  */
+@JsExport
 @JsName("VerifiersApiJs")
-object VerifiersApiJs {
+class VerifiersApiJs {
     /**
      * Verifies a parsed [CredentialEndpointResponse] against the Velocity Network rule set.
      *

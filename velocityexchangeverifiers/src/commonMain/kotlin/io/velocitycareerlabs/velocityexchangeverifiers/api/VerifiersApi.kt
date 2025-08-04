@@ -21,7 +21,7 @@ import io.velocitycareerlabs.velocityexchangeverifiers.impl.verifiers.pureverifi
 import io.velocitycareerlabs.velocityexchangeverifiers.impl.verifiers.pureverifiers.kidClaimIsVelocityV2Verifier
 import io.velocitycareerlabs.velocityexchangeverifiers.impl.verifiers.pureverifiers.subIsDidJwkOrCnfVerifier
 
-object VerifiersApi {
+class VerifiersApi {
     /**
      * Verifies the structure and contents of a Credential Endpoint response.
      *
