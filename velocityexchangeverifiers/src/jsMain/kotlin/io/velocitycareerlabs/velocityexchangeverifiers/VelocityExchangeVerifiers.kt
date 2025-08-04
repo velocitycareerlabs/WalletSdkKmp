@@ -13,8 +13,7 @@ package io.velocitycareerlabs.velocityexchangeverifiers
 import io.velocitycareerlabs.velocityexchangeverifiers.api.CredentialJwtParserJs as CredentialJwtParserJsExported
 import io.velocitycareerlabs.velocityexchangeverifiers.api.VerifiersApiJs as VerifiersApiJsExported
 
-@JsName("velocityexchangeverifiers")
 object VelocityExchangeVerifiers {
-    val VerifiersApiJs: dynamic = VerifiersApiJsExported
-    val CredentialJwtParserJs: dynamic = CredentialJwtParserJsExported
+    val VerifiersApiJs = VerifiersApiJsExported
+    val CredentialJwtParserJs = CredentialJwtParserJsExported
 }
