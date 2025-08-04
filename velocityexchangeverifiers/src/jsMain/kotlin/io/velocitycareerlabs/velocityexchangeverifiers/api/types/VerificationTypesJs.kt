@@ -5,17 +5,23 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+@file:Suppress("OPT_IN_USAGE", "NON_CONSUMABLE_EXPORTED_IDENTIFIER")
+@file:OptIn(ExperimentalJsExport::class)
+@file:JsExport
+
 package io.velocitycareerlabs.velocityexchangeverifiers.api.types
 
-import kotlin.js.ExperimentalJsExport
-import kotlin.js.JsExport
 import kotlin.js.JsName
 
 /**
- * JavaScript/TypeScript-friendly version of [CredentialIssuerMetadata].
+ * JS/TS-friendly version of [CredentialIssuerMetadata].
+ *
+ * Represents issuer metadata used in credential verification. Typically retrieved from
+ * `.well-known/openid-credential-issuer` and used to validate the `iss` claim.
+ *
+ * @property iss The issuer identifier (typically matches the `iss` in credentials)
+ * @property credentialIssuer Optional alternative issuer URI (used in OpenID4VCI compatibility)
  */
-@OptIn(ExperimentalJsExport::class)
-@JsExport
 @JsName("CredentialIssuerMetadataJs")
 data class CredentialIssuerMetadataJs(
     val iss: String,
@@ -23,36 +29,15 @@ data class CredentialIssuerMetadataJs(
 )
 
 /**
- * JavaScript/TypeScript-friendly version of [VerificationContext].
+ * JS/TS-friendly context container passed to verifiers.
+ *
+ * Includes credential issuer metadata and optional path information for tracing validation errors.
+ *
+ * @property credentialIssuerMetadata Optional issuer metadata
+ * @property path Optional JSON path to help locate verification context
  */
-@OptIn(ExperimentalJsExport::class)
-@JsExport
 @JsName("VerificationContextJs")
 data class VerificationContextJs(
     val credentialIssuerMetadata: CredentialIssuerMetadataJs? = null,
     val path: Array<String>? = null,
 )
-
-internal fun VerificationContext.toVerificationContextJs(): VerificationContextJs =
-    VerificationContextJs(
-        credentialIssuerMetadata = this.credentialIssuerMetadata?.toCredentialIssuerMetadataJs(),
-        path = this.path?.map { it.toString() }?.toTypedArray(),
-    )
-
-internal fun CredentialIssuerMetadata.toCredentialIssuerMetadataJs(): CredentialIssuerMetadataJs =
-    CredentialIssuerMetadataJs(
-        iss = this.iss,
-        credentialIssuer = this.credentialIssuer,
-    )
-
-internal fun CredentialIssuerMetadataJs.toInternal(): CredentialIssuerMetadata =
-    CredentialIssuerMetadata(
-        iss = this.iss,
-        credentialIssuer = this.credentialIssuer,
-    )
-
-internal fun VerificationContextJs.toInternal(): VerificationContext =
-    VerificationContext(
-        credentialIssuerMetadata = this.credentialIssuerMetadata?.toInternal(),
-        path = this.path?.toList(),
-    )

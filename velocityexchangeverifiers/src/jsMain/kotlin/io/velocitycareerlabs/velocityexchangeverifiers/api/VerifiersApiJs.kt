@@ -5,25 +5,32 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+@file:Suppress("OPT_IN_USAGE", "NON_CONSUMABLE_EXPORTED_IDENTIFIER")
+@file:OptIn(ExperimentalJsExport::class)
+@file:JsExport
+
 package io.velocitycareerlabs.velocityexchangeverifiers.api
 
 import io.velocitycareerlabs.velocityexchangeverifiers.api.types.CredentialEndpointResponse
 import io.velocitycareerlabs.velocityexchangeverifiers.api.types.VerificationContextJs
 import io.velocitycareerlabs.velocityexchangeverifiers.api.types.VerificationErrorJs
-import io.velocitycareerlabs.velocityexchangeverifiers.api.types.toInternal
-import io.velocitycareerlabs.velocityexchangeverifiers.api.types.toVerificationErrorJs
+import io.velocitycareerlabs.velocityexchangeverifiers.impl.toInternal
+import io.velocitycareerlabs.velocityexchangeverifiers.impl.toVerificationErrorJs
 import kotlin.js.JsName
 
 /**
- * JavaScript/TypeScript-friendly access point to credential verification.
+ * JavaScript/TypeScript-friendly entry point for credential verification.
+ *
+ * Wraps [VerifiersApi] with JS-compatible parameters and return types.
  */
+@JsName("VerifiersApiJs")
 object VerifiersApiJs {
     /**
-     * Verifies a [CredentialEndpointResponse] against the Velocity ruleset.
+     * Verifies a parsed [CredentialEndpointResponse] against the Velocity Network rule set.
      *
-     * @param response The parsed endpoint response from the issuer.
-     * @param contextJs JS-friendly context with issuer metadata.
-     * @return Array of [VerificationErrorJs] describing issues found.
+     * @param response The issuer's parsed credential response.
+     * @param contextJs JS/TS-friendly verification context.
+     * @return Array of [VerificationErrorJs] representing failed validation rules, if any.
      */
     @JsName("verifyCredentialEndpointResponse")
     fun verifyCredentialEndpointResponseJs(
