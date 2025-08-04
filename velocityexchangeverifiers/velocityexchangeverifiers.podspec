@@ -1,20 +1,20 @@
 Pod::Spec.new do |spec|
     spec.name                     = 'velocityexchangeverifiers'
-    spec.version                  = '1.0.0'
+    spec.version                  = '0.0.1'
     spec.homepage                 = 'https://github.com/velocitycareerlabs'
     spec.source                   = { :http=> ''}
     spec.authors                  = ''
     spec.license                  = ''
     spec.summary                  = 'KMP SDK for credential verification'
-    spec.vendored_frameworks      = 'build/cocoapods/framework/velocityExchangeVerifiersKit.framework'
+    spec.vendored_frameworks      = 'build/cocoapods/framework/velocityexchangeverifiers.framework'
     spec.libraries                = 'c++'
     spec.ios.deployment_target    = '13.0'
                 
                 
-    if !Dir.exist?('build/cocoapods/framework/velocityExchangeVerifiersKit.framework') || Dir.empty?('build/cocoapods/framework/velocityExchangeVerifiersKit.framework')
+    if !Dir.exist?('build/cocoapods/framework/velocityexchangeverifiers.framework') || Dir.empty?('build/cocoapods/framework/velocityexchangeverifiers.framework')
         raise "
 
-        Kotlin framework 'velocityExchangeVerifiersKit' doesn't exist yet, so a proper Xcode project can't be generated.
+        Kotlin framework 'velocityexchangeverifiers' doesn't exist yet, so a proper Xcode project can't be generated.
         'pod install' should be executed after running ':generateDummyFramework' Gradle task:
 
             ./gradlew :velocityexchangeverifiers:generateDummyFramework
@@ -28,7 +28,7 @@ Pod::Spec.new do |spec|
                 
     spec.pod_target_xcconfig = {
         'KOTLIN_PROJECT_PATH' => ':velocityexchangeverifiers',
-        'PRODUCT_MODULE_NAME' => 'velocityExchangeVerifiersKit',
+        'PRODUCT_MODULE_NAME' => 'velocityexchangeverifiers',
     }
                 
     spec.script_phases = [

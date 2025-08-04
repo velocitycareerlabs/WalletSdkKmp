@@ -10,13 +10,20 @@ plugins {
     alias(libs.plugins.cocoapods)
 }
 
+val publishCode = 1
+val publishVersion = "0.0.1"
+val publishArtifactId = "velocityexchangeverifiers"
+val publishGroupId = "io.velocitycareerlabs"
+
 kotlin {
+
+//    explicitApi() // Requires explicit visibility and return types
 
     // Target declarations - add or remove as needed below. These define
     // which platforms this KMP module supports.
     // See: https://kotlinlang.org/docs/multiplatform-discover-project.html#targets
     androidLibrary {
-        namespace = "io.velocitycareerlabs.velocityexchangeverifiers"
+        namespace = "$publishGroupId.$publishArtifactId"
         compileSdk = 36
         minSdk = 24
 
@@ -36,37 +43,41 @@ kotlin {
     // A step-by-step guide on how to include this library in an XCode
     // project can be found here:
     // https://developer.android.com/kotlin/multiplatform/migrate
-    val xcfName = "velocityExchangeVerifiersKit"
     val xcf = XCFramework()
 
     iosX64 {
         binaries.framework {
-            baseName = xcfName
+            baseName = publishArtifactId
             xcf.add(this)
         }
     }
 
     iosArm64 {
         binaries.framework {
-            baseName = xcfName
+            baseName = publishArtifactId
             xcf.add(this)
         }
     }
 
     iosSimulatorArm64 {
         binaries.framework {
-            baseName = xcfName
+            baseName = publishArtifactId
             xcf.add(this)
         }
     }
 
     js(IR) {
+        // Include both Node.js and browser support
         browser {
             commonWebpackConfig {
                 sourceMaps = true
             }
         }
         nodejs()
+
+        // Use ES modules for better compatibility with modern JS environments
+        useEsModules()
+
         binaries.executable()
     }
 
@@ -80,12 +91,12 @@ kotlin {
     }
 
     cocoapods {
-        version = "1.0.0"
+        version = publishVersion
         summary = "KMP SDK for credential verification"
         homepage = "https://github.com/velocitycareerlabs"
         ios.deploymentTarget = "13.0"
         framework {
-            baseName = xcfName
+            baseName = publishArtifactId
             isStatic = false
         }
     }
@@ -130,6 +141,12 @@ kotlin {
                 // part of KMP’s default source set hierarchy. Note that this source set depends
                 // on common by default and will correctly pull the iOS artifacts of any
                 // KMP dependencies declared in commonMain.
+            }
+        }
+
+        jsMain {
+            dependencies {
+                // Add JS-specific dependencies here.
             }
         }
     }

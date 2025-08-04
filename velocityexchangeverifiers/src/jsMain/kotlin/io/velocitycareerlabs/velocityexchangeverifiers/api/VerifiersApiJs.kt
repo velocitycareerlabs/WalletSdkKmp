@@ -45,3 +45,12 @@ object VerifiersApiJs {
             .toTypedArray()
     }
 }
+
+@Suppress("unused")
+@OptIn(ExperimentalJsExport::class)
+@JsExport
+val forceJsObjects =
+    listOf(
+        VerifiersApiJs,
+        CredentialJwtParserJs,
+    )
