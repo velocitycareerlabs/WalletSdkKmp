@@ -37,15 +37,17 @@ class VerifiersApiJs {
     fun verifyCredentialEndpointResponseJs(
         response: CredentialEndpointResponse,
         contextJs: VerificationContextJs,
-    ): Array<VerificationErrorJs> {
+    ): List<VerificationErrorJs> {
+        val verifiersApi = VerifiersApi()
+
         val internalContext = contextJs.toInternal()
 
-        return VerifiersApi
+        return verifiersApi
             .verifyCredentialEndpointResponse(
                 response = response,
                 context = internalContext,
-                verifiers = VerifiersApi.defaultCredentialVerifiers,
+                verifiers = verifiersApi.defaultCredentialVerifiers,
             ).map { it.toVerificationErrorJs() }
-            .toTypedArray()
+            .toList()
     }
 }

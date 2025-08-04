@@ -43,11 +43,11 @@ data class W3CCredentialJwtV1Js(
 /**
  * JS/TS-friendly version of a Credential Endpoint Response.
  *
- * Wraps an array of parsed credentials returned from an issuer endpoint.
+ * Wraps an list of parsed credentials returned from an issuer endpoint.
  *
- * @property credentials Array of parsed VC JWTs in JS-friendly format.
+ * @property credentials List of parsed VC JWTs in JS-friendly format.
  */
 @JsName("CredentialEndpointResponseJs")
 data class CredentialEndpointResponseJs(
-    val credentials: Array<W3CCredentialJwtV1Js> = emptyArray(),
+    val credentials: List<W3CCredentialJwtV1Js>,
 )

@@ -7,7 +7,6 @@
 
 package io.velocitycareerlabs.velocityexchangeverifiers.api
 
-import io.velocitycareerlabs.velocityexchangeverifiers.api.VerifiersApi.verifyCredentialEndpointResponse
 import io.velocitycareerlabs.velocityexchangeverifiers.api.types.CredentialEndpointResponse
 import io.velocitycareerlabs.velocityexchangeverifiers.api.types.CredentialIssuerMetadata
 import io.velocitycareerlabs.velocityexchangeverifiers.api.types.CredentialVerifiers
@@ -26,6 +25,8 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 internal class VerifyCredentialEndpointResponseTest {
+    val verifiersApi = VerifiersApi()
+
     private val baseContext =
         VerificationContext(
             path = emptyList(),
@@ -94,7 +95,7 @@ internal class VerifyCredentialEndpointResponseTest {
                 claims = mapOf("credentials" to listOf(createMockCredential()).encodeAsJsonElement()),
             )
 
-        val result = verifyCredentialEndpointResponse(response, baseContext, mockVerifiers)
+        val result = verifiersApi.verifyCredentialEndpointResponse(response, baseContext, mockVerifiers)
 
         assertEquals(emptyList(), result)
     }
@@ -124,7 +125,7 @@ internal class VerifyCredentialEndpointResponseTest {
                 claims = mapOf("credentials" to listOf(createMockCredential()).encodeAsJsonElement()),
             )
 
-        val result = verifyCredentialEndpointResponse(response, baseContext, mockVerifiers)
+        val result = verifiersApi.verifyCredentialEndpointResponse(response, baseContext, mockVerifiers)
 
         assertEquals(listOf(expectedError), result)
     }
@@ -171,7 +172,7 @@ internal class VerifyCredentialEndpointResponseTest {
                 claims = mapOf("credentials" to credentials.encodeAsJsonElement()),
             )
 
-        val result = verifyCredentialEndpointResponse(response, baseContext, mockVerifiers)
+        val result = verifiersApi.verifyCredentialEndpointResponse(response, baseContext, mockVerifiers)
 
         assertEquals(errorsList, result)
     }
@@ -179,18 +180,18 @@ internal class VerifyCredentialEndpointResponseTest {
     @Test
     fun `returns empty list when credentials are missing`() {
         val response = CredentialEndpointResponse(claims = emptyMap())
-        val result = verifyCredentialEndpointResponse(response, baseContext, erroringVerifiers())
+        val result = verifiersApi.verifyCredentialEndpointResponse(response, baseContext, erroringVerifiers())
 
         assertEquals(emptyList(), result)
     }
 
     @Test
-    fun `returns empty list when credentials is an empty array`() {
+    fun `returns empty list when credentials is an empty list`() {
         val response =
             CredentialEndpointResponse(
                 claims = mapOf("credentials" to emptyList<JsonElement>().encodeAsJsonElement()),
             )
-        val result = verifyCredentialEndpointResponse(response, baseContext, erroringVerifiers())
+        val result = verifiersApi.verifyCredentialEndpointResponse(response, baseContext, erroringVerifiers())
 
         assertEquals(emptyList(), result)
     }

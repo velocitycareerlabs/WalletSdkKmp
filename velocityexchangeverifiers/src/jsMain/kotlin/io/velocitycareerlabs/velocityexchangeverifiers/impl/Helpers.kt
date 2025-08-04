@@ -47,7 +47,7 @@ internal fun CredentialIssuerMetadataJs.toInternal(): CredentialIssuerMetadata =
 internal fun VerificationContext.toJs(): VerificationContextJs =
     VerificationContextJs(
         credentialIssuerMetadata = credentialIssuerMetadata?.toJs(),
-        path = path?.map { it.toString() }?.toTypedArray(),
+        path = path?.map { it.toString() }?.toList(),
     )
 
 internal fun VerificationContextJs.toInternal(): VerificationContext =
@@ -75,12 +75,12 @@ internal fun W3CCredentialJwtV1.toJs(): W3CCredentialJwtV1Js =
 
 internal fun CredentialEndpointResponse.toJs(): CredentialEndpointResponseJs =
     CredentialEndpointResponseJs(
-        credentials = credentials?.map { it.toJs() }?.toTypedArray() ?: emptyArray(),
+        credentials = credentials?.map { it.toJs() }?.toList() ?: emptyList(),
     )
 
 internal fun VerificationError.toVerificationErrorJs(): VerificationErrorJs =
     VerificationErrorJs(
         code = code.code,
         message = message,
-        path = path?.map { it.toString() }?.toTypedArray(),
+        path = path?.map { it.toString() }?.toList(),
     )

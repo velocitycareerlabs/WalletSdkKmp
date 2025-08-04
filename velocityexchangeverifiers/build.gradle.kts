@@ -66,16 +66,20 @@ kotlin {
         }
     }
 
-    kotlin {
-        js(IR) {
-            nodejs() // Target Node.js environment
-            useEsModules() // Output ES2015+ modules (produces .mjs or ES module .js files) [oai_citation:0‡kt.academy](https://kt.academy/article/ak-js-interop#:~:text=jvm%20,sourceSets)
-            outputModuleName = publishArtifactId // Set module name (lowercase to avoid Node warnings) [oai_citation:1‡dev.to](https://dev.to/touchlab/different-ways-to-distribute-and-integrate-kotlinjs-library-1hg3#:~:text=Note%20that%20node%20module%20cannot,target%20to%20avoid%20that)
-            binaries.library() // Build as a library (produces .js/.mjs + .d.ts + package.json) [oai_citation:2‡dev.to](https://dev.to/touchlab/different-ways-to-distribute-and-integrate-kotlinjs-library-1hg3#:~:text=As%20mentioned%20above%20in%20the,%60package.json)
-        }
-        sourceSets.all {
-            languageSettings.optIn("kotlin.js.ExperimentalJsExport") // Opt-in to @JsExport (since it's experimental)
-        }
+    js(IR) {
+        nodejs() // Target Node.js environment
+        useEsModules() // Output ES2015+ modules (produces .mjs or ES module .js files) [oai_citation:0‡kt.academy](https://kt.academy/article/ak-js-interop#:~:text=jvm%20,sourceSets)
+        outputModuleName = publishArtifactId // Set module name (lowercase to avoid Node warnings) [oai_citation:1‡dev.to](https://dev.to/touchlab/different-ways-to-distribute-and-integrate-kotlinjs-library-1hg3#:~:text=Note%20that%20node%20module%20cannot,target%20to%20avoid%20that)
+        binaries.library() // Build as a library (produces .js/.mjs + .d.ts + package.json) [oai_citation:2‡dev.to](https://dev.to/touchlab/different-ways-to-distribute-and-integrate-kotlinjs-library-1hg3#:~:text=As%20mentioned%20above%20in%20the,%60package.json)
+
+//        TODO: handle the following commented code
+//        compilations["main"].packageJson {
+//            name = "@velocitycareerlabs/$publishArtifactId"
+//            version = publishVersion
+//        }
+    }
+    sourceSets.all {
+        languageSettings.optIn("kotlin.js.ExperimentalJsExport") // Opt-in to @JsExport (since it's experimental)
     }
 
     wasmJs {
