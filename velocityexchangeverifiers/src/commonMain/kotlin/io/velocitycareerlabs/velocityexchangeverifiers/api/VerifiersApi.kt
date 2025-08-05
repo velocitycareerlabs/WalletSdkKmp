@@ -82,17 +82,19 @@ class VerifiersApi {
 //                .flatten()
 //        }
 
-    /**
-     * The default set of verifiers that enforce the Velocity profile rules for credential validation.
-     */
-    val defaultCredentialVerifiers =
-        CredentialVerifiers(
-            algIsSupported = algIsSupportedVerifier,
-            credentialSchema = credentialSchemaVerifier,
-            credentialStatus = credentialStatusVerifier,
-            issClaimMatchesEitherMetadataOrCredentialIssuer = issClaimMatchesEitherMetadataOrCredentialIssuerVerifier,
-            issClaimMatchesMetadata = issClaimMatchesMetadataVerifier,
-            kidClaimIsVelocityV2 = kidClaimIsVelocityV2Verifier,
-            subIsDidJwkOrCnf = subIsDidJwkOrCnfVerifier,
-        )
+    companion object {
+        /**
+         * The default set of verifiers that enforce the Velocity profile rules for credential validation.
+         */
+        val defaultCredentialVerifiers =
+            CredentialVerifiers(
+                algIsSupported = algIsSupportedVerifier,
+                credentialSchema = credentialSchemaVerifier,
+                credentialStatus = credentialStatusVerifier,
+                issClaimMatchesEitherMetadataOrCredentialIssuer = issClaimMatchesEitherMetadataOrCredentialIssuerVerifier,
+                issClaimMatchesMetadata = issClaimMatchesMetadataVerifier,
+                kidClaimIsVelocityV2 = kidClaimIsVelocityV2Verifier,
+                subIsDidJwkOrCnf = subIsDidJwkOrCnfVerifier,
+            )
+    }
 }
