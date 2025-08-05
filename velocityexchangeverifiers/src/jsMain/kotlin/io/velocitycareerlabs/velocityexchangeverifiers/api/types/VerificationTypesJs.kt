@@ -39,5 +39,5 @@ data class CredentialIssuerMetadataJs(
 @JsName("VerificationContextJs")
 data class VerificationContextJs(
     val credentialIssuerMetadata: CredentialIssuerMetadataJs? = null,
-    val path: List<String>? = null,
+    val path: Array<String>? = null,
 )

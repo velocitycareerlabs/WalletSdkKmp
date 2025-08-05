@@ -47,7 +47,7 @@ internal fun CredentialIssuerMetadataJs.toInternal(): CredentialIssuerMetadata =
 internal fun VerificationContext.toJs(): VerificationContextJs =
     VerificationContextJs(
         credentialIssuerMetadata = credentialIssuerMetadata?.toJs(),
-        path = path?.map { it.toString() }?.toList(),
+        path = path?.map { it.toString() }?.toTypedArray(),
     )
 
 internal fun VerificationContextJs.toInternal(): VerificationContext =
@@ -63,24 +63,22 @@ internal fun W3CCredentialJwtV1.toJs(): W3CCredentialJwtV1Js =
         typ = header?.typ,
         iss = payload.iss,
         sub = payload.sub,
-        credentialSchemaJson =
-            payload.vc?.credentialSchema?.let {
-                json.encodeToString(jsonObjectSerializer, it)
-            },
-        credentialStatusJson =
-            payload.vc?.credentialStatus?.let {
-                json.encodeToString(jsonObjectSerializer, it)
-            },
+        credentialSchemaJson = payload.vc?.credentialSchema?.let { credentialSchema ->
+            json.encodeToString(jsonObjectSerializer, credentialSchema)
+        },
+        credentialStatusJson = payload.vc?.credentialStatus?.let { credentialStatus ->
+            json.encodeToString(jsonObjectSerializer, credentialStatus)
+        },
     )
 
 internal fun CredentialEndpointResponse.toJs(): CredentialEndpointResponseJs =
     CredentialEndpointResponseJs(
-        credentials = credentials?.map { it.toJs() }?.toList() ?: emptyList(),
+        credentials = credentials?.map { it.toJs() }?.toTypedArray() ?: emptyArray(),
     )
 
-internal fun VerificationError.toVerificationErrorJs(): VerificationErrorJs =
+internal fun VerificationError.toJs(): VerificationErrorJs =
     VerificationErrorJs(
         code = code.code,
         message = message,
-        path = path?.map { it.toString() }?.toList(),
+        path = path?.map { it.toString() }?.toTypedArray(),
     )

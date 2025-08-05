@@ -20,7 +20,7 @@ import kotlin.js.JsName
  *
  * This object exposes functions to:
  * - Parse individual JWT credentials into interoperable [W3CCredentialJwtV1Js] objects.
- * - Parse full Credential Endpoint Response payloads into lists of credentials.
+ * - Parse full Credential Endpoint Response payloads into arrays of credentials.
  *
  * These functions return JS-friendly structures and avoid leaking internal Kotlin-native models.
  */
@@ -42,10 +42,10 @@ object CredentialJwtParserJs {
      * @return JS-compatible array of credentials, or `null` if parsing fails or is empty.
      */
     @JsName("parseCredentialEndpointResponseAsJs")
-    fun parseCredentialEndpointResponseAsJs(json: String): List<W3CCredentialJwtV1Js>? =
+    fun parseCredentialEndpointResponseAsJs(json: String): Array<W3CCredentialJwtV1Js>? =
         CredentialJwtParser
             .parseCredentialEndpointResponseOrNull(json)
             ?.credentials
             ?.map { it.toJs() }
-            ?.toList()
+            ?.toTypedArray()
 }

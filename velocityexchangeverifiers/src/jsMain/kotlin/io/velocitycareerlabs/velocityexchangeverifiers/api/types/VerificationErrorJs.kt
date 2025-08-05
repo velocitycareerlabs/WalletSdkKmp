@@ -29,5 +29,5 @@ import kotlin.js.JsName
 data class VerificationErrorJs(
     val code: String,
     val message: String,
-    val path: List<String>? = null,
+    val path: Array<String>? = null,
 )

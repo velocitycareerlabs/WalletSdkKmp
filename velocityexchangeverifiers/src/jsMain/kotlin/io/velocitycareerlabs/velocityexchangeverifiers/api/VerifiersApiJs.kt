@@ -15,7 +15,7 @@ import io.velocitycareerlabs.velocityexchangeverifiers.api.types.CredentialEndpo
 import io.velocitycareerlabs.velocityexchangeverifiers.api.types.VerificationContextJs
 import io.velocitycareerlabs.velocityexchangeverifiers.api.types.VerificationErrorJs
 import io.velocitycareerlabs.velocityexchangeverifiers.impl.toInternal
-import io.velocitycareerlabs.velocityexchangeverifiers.impl.toVerificationErrorJs
+import io.velocitycareerlabs.velocityexchangeverifiers.impl.toJs
 import kotlin.js.JsName
 
 /**
@@ -37,7 +37,7 @@ class VerifiersApiJs {
     fun verifyCredentialEndpointResponseJs(
         response: CredentialEndpointResponse,
         contextJs: VerificationContextJs,
-    ): List<VerificationErrorJs> {
+    ): Array<VerificationErrorJs> {
         val verifiersApi = VerifiersApi()
 
         val internalContext = contextJs.toInternal()
@@ -47,7 +47,7 @@ class VerifiersApiJs {
                 response = response,
                 context = internalContext,
                 verifiers = verifiersApi.defaultCredentialVerifiers,
-            ).map { it.toVerificationErrorJs() }
-            .toList()
+            ).map { it.toJs() }
+            .toTypedArray()
     }
 }
