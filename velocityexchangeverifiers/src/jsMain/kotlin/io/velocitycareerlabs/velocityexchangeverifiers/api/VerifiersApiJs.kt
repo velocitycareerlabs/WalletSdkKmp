@@ -11,7 +11,7 @@
 
 package io.velocitycareerlabs.velocityexchangeverifiers.api
 
-import io.velocitycareerlabs.velocityexchangeverifiers.api.types.CredentialEndpointResponse
+import io.velocitycareerlabs.velocityexchangeverifiers.api.types.CredentialEndpointResponseJs
 import io.velocitycareerlabs.velocityexchangeverifiers.api.types.VerificationContextJs
 import io.velocitycareerlabs.velocityexchangeverifiers.api.types.VerificationErrorJs
 import io.velocitycareerlabs.velocityexchangeverifiers.impl.toInternal
@@ -27,26 +27,26 @@ import kotlin.js.JsName
 @JsName("VerifiersApiJs")
 class VerifiersApiJs {
     /**
-     * Verifies a parsed [CredentialEndpointResponse] against the Velocity Network rule set.
+     * Verifies a parsed [CredentialEndpointResponseJs] against the Velocity Network rule set.
      *
-     * @param response The issuer's parsed credential response.
+     * @param responseJs The issuer's parsed credential response (JS version).
      * @param contextJs JS/TS-friendly verification context.
      * @return Array of [VerificationErrorJs] representing failed validation rules, if any.
      */
     @JsName("verifyCredentialEndpointResponse")
     fun verifyCredentialEndpointResponseJs(
-        response: CredentialEndpointResponse,
+        responseJs: CredentialEndpointResponseJs,
         contextJs: VerificationContextJs,
     ): Array<VerificationErrorJs> {
         val verifiersApi = VerifiersApi()
-
+        val internalResponse = responseJs.toInternal()
         val internalContext = contextJs.toInternal()
 
         return verifiersApi
             .verifyCredentialEndpointResponse(
-                response = response,
+                response = internalResponse,
                 context = internalContext,
-                verifiers = verifiersApi.defaultCredentialVerifiers,
+                verifiers = VerifiersApi.defaultCredentialVerifiers,
             ).map { it.toJs() }
             .toTypedArray()
     }

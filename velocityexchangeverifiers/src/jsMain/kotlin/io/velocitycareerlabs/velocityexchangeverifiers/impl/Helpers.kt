@@ -11,12 +11,15 @@ import io.velocitycareerlabs.velocityexchangeverifiers.api.types.CredentialEndpo
 import io.velocitycareerlabs.velocityexchangeverifiers.api.types.CredentialEndpointResponseJs
 import io.velocitycareerlabs.velocityexchangeverifiers.api.types.CredentialIssuerMetadata
 import io.velocitycareerlabs.velocityexchangeverifiers.api.types.CredentialIssuerMetadataJs
+import io.velocitycareerlabs.velocityexchangeverifiers.api.types.JwtHeader
+import io.velocitycareerlabs.velocityexchangeverifiers.api.types.JwtPayload
 import io.velocitycareerlabs.velocityexchangeverifiers.api.types.VerificationContext
 import io.velocitycareerlabs.velocityexchangeverifiers.api.types.VerificationContextJs
 import io.velocitycareerlabs.velocityexchangeverifiers.api.types.VerificationError
 import io.velocitycareerlabs.velocityexchangeverifiers.api.types.VerificationErrorJs
 import io.velocitycareerlabs.velocityexchangeverifiers.api.types.W3CCredentialJwtV1
 import io.velocitycareerlabs.velocityexchangeverifiers.api.types.W3CCredentialJwtV1Js
+import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 
@@ -32,14 +35,10 @@ private val json =
 
 private val jsonObjectSerializer = JsonObject.serializer()
 
+// ------------ Kotlin -> JS (toJs) ------------
+
 internal fun CredentialIssuerMetadata.toJs(): CredentialIssuerMetadataJs =
     CredentialIssuerMetadataJs(
-        iss = iss,
-        credentialIssuer = credentialIssuer,
-    )
-
-internal fun CredentialIssuerMetadataJs.toInternal(): CredentialIssuerMetadata =
-    CredentialIssuerMetadata(
         iss = iss,
         credentialIssuer = credentialIssuer,
     )
@@ -48,12 +47,6 @@ internal fun VerificationContext.toJs(): VerificationContextJs =
     VerificationContextJs(
         credentialIssuerMetadata = credentialIssuerMetadata?.toJs(),
         path = path?.map { it.toString() }?.toTypedArray(),
-    )
-
-internal fun VerificationContextJs.toInternal(): VerificationContext =
-    VerificationContext(
-        credentialIssuerMetadata = credentialIssuerMetadata?.toInternal(),
-        path = path?.toList(),
     )
 
 internal fun W3CCredentialJwtV1.toJs(): W3CCredentialJwtV1Js =
@@ -83,4 +76,64 @@ internal fun VerificationError.toJs(): VerificationErrorJs =
         code = code.code,
         message = message,
         path = path?.map { it.toString() }?.toTypedArray(),
+    )
+
+// ------------ JS -> Kotlin (toInternal) ------------
+
+internal fun CredentialIssuerMetadataJs.toInternal(): CredentialIssuerMetadata =
+    CredentialIssuerMetadata(
+        iss = iss,
+        credentialIssuer = credentialIssuer,
+    )
+
+internal fun VerificationContextJs.toInternal(): VerificationContext =
+    VerificationContext(
+        credentialIssuerMetadata = credentialIssuerMetadata?.toInternal(),
+        path = path?.toList(),
+    )
+
+internal fun W3CCredentialJwtV1Js.toInternal(): W3CCredentialJwtV1 =
+    W3CCredentialJwtV1(
+        header =
+            JwtHeader(
+                claims =
+                    buildMap {
+                        alg?.let { put("alg", json.parseToJsonElement("\"$it\"")) }
+                        kid?.let { put("kid", json.parseToJsonElement("\"$it\"")) }
+                        typ?.let { put("typ", json.parseToJsonElement("\"$it\"")) }
+                    },
+            ),
+        payload =
+            JwtPayload(
+                claims =
+                    buildMap {
+                        iss?.let { put("iss", json.parseToJsonElement("\"$it\"")) }
+                        sub?.let { put("sub", json.parseToJsonElement("\"$it\"")) }
+                        // vc is constructed below as an object if either schema/status present
+                        val vcClaims =
+                            buildMap<String, JsonObject> {
+                                credentialSchemaJson?.let {
+                                    put("credentialSchema", json.decodeFromString(jsonObjectSerializer, it))
+                                }
+                                credentialStatusJson?.let {
+                                    put("credentialStatus", json.decodeFromString(jsonObjectSerializer, it))
+                                }
+                            }
+                        if (vcClaims.isNotEmpty()) {
+                            put("vc", JsonObject(vcClaims))
+                        }
+                    },
+            ),
+    )
+
+internal fun CredentialEndpointResponseJs.toInternal(): CredentialEndpointResponse =
+    CredentialEndpointResponse(
+        claims =
+            mapOf(
+                "credentials" to
+                    json.encodeToJsonElement(
+                        ListSerializer(W3CCredentialJwtV1.serializer()),
+                        credentials.map { it.toInternal() },
+                    ),
+            ),
     )

@@ -61,26 +61,6 @@ class VerifiersApi {
             )
         }
     }
-//    suspend fun verifyCredentialEndpointResponse(
-//        response: CredentialEndpointResponse,
-//        context: VerificationContext,
-//        verifiers: CredentialVerifiers = defaultCredentialVerifiers,
-//    ): List<VerificationError> =
-//        coroutineScope {
-//            val credentials = response.credentials ?: return@coroutineScope emptyList()
-//
-//            credentials
-//                .mapIndexed { index, credential ->
-//                    async {
-//                        verifyCredentialJwtPayloadStrict(
-//                            credential = credential,
-//                            context = withPath(context, listOf("credentials", index)),
-//                            verifiers = verifiers,
-//                        )
-//                    }
-//                }.awaitAll()
-//                .flatten()
-//        }
 
     companion object {
         /**

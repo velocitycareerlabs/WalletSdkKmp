@@ -7,7 +7,6 @@
 
 package io.velocitycareerlabs.velocityexchangeverifiers.api.types
 
-import io.velocitycareerlabs.velocityexchangeverifiers.impl.extensions.decodeAsOrNull
 import io.velocitycareerlabs.velocityexchangeverifiers.impl.serializers.JwtHeaderSerializer
 import io.velocitycareerlabs.velocityexchangeverifiers.impl.serializers.JwtPayloadSerializer
 import kotlinx.serialization.Serializable
@@ -83,36 +82,3 @@ data class JwtPayload(
             claims["vc"]?.jsonObject?.let { VcClaims(it) }
         }.getOrNull() ?: VcClaims(),
 )
-
-/**
- * Represents the Verifiable Credential (VC) object within a JWT.
- *
- * @property credentialSchema Credential schema object.
- * @property credentialStatus Credential status information.
- * @property claims All raw VC fields.
- */
-@Serializable
-data class VcClaims(
-    val claims: Map<String, JsonElement> = emptyMap(),
-) {
-    constructor(json: JsonObject) : this(json.toMap())
-
-    val credentialSchema: JsonObject? get() = claims["credentialSchema"]?.jsonObject
-    val credentialStatus: JsonObject? get() = claims["credentialStatus"]?.jsonObject
-}
-
-/**
- * Represents a response from the Credential Endpoint (OpenID4VCI).
- *
- * Typically includes a list of [W3CCredentialJwtV1] objects issued by the credential issuer.
- *
- * @property credentials Optional list of issued credentials.
- * @property claims All raw fields from the response.
- */
-@Serializable
-data class CredentialEndpointResponse(
-    val claims: Map<String, JsonElement> = emptyMap(),
-) {
-    val credentials: List<W3CCredentialJwtV1>? =
-        runCatching { claims["credentials"]?.decodeAsOrNull<List<W3CCredentialJwtV1>>() }.getOrNull()
-}

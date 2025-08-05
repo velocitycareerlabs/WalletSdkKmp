@@ -1,5 +1,5 @@
 /**
- * Created by Michael Avoyan on 31/07/2025.
+ * Created by Michael Avoyan on 05/08/2025.
  *
  * Copyright 2022 Velocity Career Labs inc.
  * SPDX-License-Identifier: Apache-2.0
@@ -10,10 +10,6 @@
 @file:JsExport
 
 package io.velocitycareerlabs.velocityexchangeverifiers.api.types
-
-import kotlin.js.ExperimentalJsExport
-import kotlin.js.JsExport
-import kotlin.js.JsName
 
 /**
  * JS/TS-friendly version of a parsed W3C Credential JWT.
@@ -38,16 +34,4 @@ data class W3CCredentialJwtV1Js(
     val sub: String? = null,
     val credentialSchemaJson: String? = null,
     val credentialStatusJson: String? = null,
-)
-
-/**
- * JS/TS-friendly version of a Credential Endpoint Response.
- *
- * Wraps an array of parsed credentials returned from an issuer endpoint.
- *
- * @property credentials Array of parsed VC JWTs in JS-friendly format.
- */
-@JsName("CredentialEndpointResponseJs")
-data class CredentialEndpointResponseJs(
-    val credentials: Array<W3CCredentialJwtV1Js>,
 )
