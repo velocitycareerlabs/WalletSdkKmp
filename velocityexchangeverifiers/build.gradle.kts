@@ -10,7 +10,6 @@ plugins {
     alias(libs.plugins.cocoapods)
 }
 
-val publishCode = 1
 val publishVersion = "0.1.0"
 val publishArtifactId = "velocityexchangeverifiers"
 val publishGroupId = "io.velocitycareerlabs"
@@ -23,6 +22,7 @@ kotlin {
     // which platforms this KMP module supports.
     // See: https://kotlinlang.org/docs/multiplatform-discover-project.html#targets
     androidLibrary {
+        version = publishVersion
         namespace = "$publishGroupId.$publishArtifactId"
         compileSdk = 36
         minSdk = 24
@@ -48,6 +48,7 @@ kotlin {
     iosX64 {
         binaries.framework {
             baseName = publishArtifactId
+            version = publishVersion
             xcf.add(this)
         }
     }
@@ -55,6 +56,7 @@ kotlin {
     iosArm64 {
         binaries.framework {
             baseName = publishArtifactId
+            version = publishVersion
             xcf.add(this)
         }
     }
@@ -62,6 +64,7 @@ kotlin {
     iosSimulatorArm64 {
         binaries.framework {
             baseName = publishArtifactId
+            version = publishVersion
             xcf.add(this)
         }
     }
@@ -69,12 +72,12 @@ kotlin {
     js(IR) {
         nodejs() // Target Node.js environment
         useEsModules() // Output ES2015+ modules (produces .mjs or ES module .js files) [oai_citation:0‡kt.academy](https://kt.academy/article/ak-js-interop#:~:text=jvm%20,sourceSets)
-        outputModuleName = publishArtifactId // Set module name (lowercase to avoid Node warnings) [oai_citation:1‡dev.to](https://dev.to/touchlab/different-ways-to-distribute-and-integrate-kotlinjs-library-1hg3#:~:text=Note%20that%20node%20module%20cannot,target%20to%20avoid%20that)
+        outputModuleName = "$publishArtifactId-js" // Set module name (lowercase to avoid Node warnings) [oai_citation:1‡dev.to](https://dev.to/touchlab/different-ways-to-distribute-and-integrate-kotlinjs-library-1hg3#:~:text=Note%20that%20node%20module%20cannot,target%20to%20avoid%20that)
         binaries.library() // Build as a library (produces .js/.mjs + .d.ts + package.json) [oai_citation:2‡dev.to](https://dev.to/touchlab/different-ways-to-distribute-and-integrate-kotlinjs-library-1hg3#:~:text=As%20mentioned%20above%20in%20the,%60package.json)
 
 //        TODO: Discuss with Andres
         compilations["main"].packageJson {
-            name = "@velocitycareerlabs/$publishArtifactId"
+            name = "@velocitycareerlabs/$publishArtifactId-js"
             version = publishVersion
         }
     }

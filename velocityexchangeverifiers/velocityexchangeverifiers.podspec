@@ -1,6 +1,6 @@
 Pod::Spec.new do |spec|
     spec.name                     = 'velocityexchangeverifiers'
-    spec.version                  = '0.0.1'
+    spec.version                  = '0.1.0'
     spec.homepage                 = 'https://github.com/velocitycareerlabs'
     spec.source                   = { :http=> ''}
     spec.authors                  = ''
