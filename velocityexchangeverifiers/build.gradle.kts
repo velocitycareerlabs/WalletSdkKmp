@@ -11,7 +11,7 @@ plugins {
 }
 
 val publishCode = 1
-val publishVersion = "0.0.1"
+val publishVersion = "0.1.0"
 val publishArtifactId = "velocityexchangeverifiers"
 val publishGroupId = "io.velocitycareerlabs"
 
