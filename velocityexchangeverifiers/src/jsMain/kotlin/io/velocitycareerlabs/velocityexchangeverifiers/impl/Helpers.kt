@@ -63,12 +63,14 @@ internal fun W3CCredentialJwtV1.toJs(): W3CCredentialJwtV1Js =
         typ = header?.typ,
         iss = payload.iss,
         sub = payload.sub,
-        credentialSchemaJson = payload.vc?.credentialSchema?.let { credentialSchema ->
-            json.encodeToString(jsonObjectSerializer, credentialSchema)
-        },
-        credentialStatusJson = payload.vc?.credentialStatus?.let { credentialStatus ->
-            json.encodeToString(jsonObjectSerializer, credentialStatus)
-        },
+        credentialSchemaJson =
+            payload.vc?.credentialSchema?.let { credentialSchema ->
+                json.encodeToString(jsonObjectSerializer, credentialSchema)
+            },
+        credentialStatusJson =
+            payload.vc?.credentialStatus?.let { credentialStatus ->
+                json.encodeToString(jsonObjectSerializer, credentialStatus)
+            },
     )
 
 internal fun CredentialEndpointResponse.toJs(): CredentialEndpointResponseJs =
