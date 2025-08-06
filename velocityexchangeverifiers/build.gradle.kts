@@ -70,18 +70,46 @@ kotlin {
     }
 
     js(IR) {
-        nodejs() // Target Node.js environment
-        useEsModules() // Output ES2015+ modules (produces .mjs or ES module .js files) [oai_citation:0‡kt.academy](https://kt.academy/article/ak-js-interop#:~:text=jvm%20,sourceSets)
-        outputModuleName = "$publishArtifactId-js" // Set module name (lowercase to avoid Node warnings) [oai_citation:1‡dev.to](https://dev.to/touchlab/different-ways-to-distribute-and-integrate-kotlinjs-library-1hg3#:~:text=Note%20that%20node%20module%20cannot,target%20to%20avoid%20that)
-        binaries.library() // Build as a library (produces .js/.mjs + .d.ts + package.json) [oai_citation:2‡dev.to](https://dev.to/touchlab/different-ways-to-distribute-and-integrate-kotlinjs-library-1hg3#:~:text=As%20mentioned%20above%20in%20the,%60package.json)
+        nodejs()
+        useEsModules()
+        outputModuleName = "$publishArtifactId-js"
+        binaries.library()
         generateTypeScriptDefinitions()
 
-//        TODO: Discuss with Andres
         compilations["main"].packageJson {
             name = "@velocitycareerlabs/$publishArtifactId-js"
             version = publishVersion
+            description = "Velocity SDK for Exchange Verifiers"
+            customField("license", "Apache-2.0")
+            customField("author", "Michael Avoyan")
+            customField("repository", "https://github.com/velocitycareerlabs/WalletSdkKmp")
+            customField("homepage", "https://github.com/velocitycareerlabs/WalletSdkKmp")
+            customField("main", "$publishArtifactId-js.mjs")
+            customField("types", "$publishArtifactId-js.d.ts")
+            customField("module", "$publishArtifactId-js.mjs")
+            customField("sideEffects", false)
+            customField(
+                "publishConfig",
+                mapOf("access" to "public"),
+            )
+            customField(
+                "keywords",
+                listOf(
+                    "velocity",
+                    "vcl",
+                    "wallet",
+                    "exchange",
+                    "verifier",
+                    "velocityexchangeverifiers",
+                    "velocity-exchange-verifiers",
+                    "verifiable",
+                    "credentials",
+                    "identity",
+                ),
+            )
         }
     }
+
     sourceSets.all {
         languageSettings.optIn("kotlin.js.ExperimentalJsExport") // Opt-in to @JsExport (since it's experimental)
     }
