@@ -1,0 +1,36 @@
+name: KMP Reusable Tests
+
+on:
+  workflow_call:
+
+env:
+  JAVA_VERSION: "17"
+
+jobs:
+  run-tests:
+    runs-on: macos-15
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Lint (ktlint)
+        run: ./gradlew cleanFormat
+
+      - name: Run All Unit Tests
+        run: ./gradlew allTests
+
+      - name: Archive Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: '**/build/test-results/**/*.xml'
