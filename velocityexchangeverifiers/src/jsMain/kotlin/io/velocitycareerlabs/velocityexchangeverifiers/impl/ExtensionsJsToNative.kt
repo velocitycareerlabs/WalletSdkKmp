@@ -33,19 +33,19 @@ private val json =
 
 private val jsonObjectSerializer = JsonObject.serializer()
 
-internal fun CredentialIssuerMetadataJs.toKotlin(): CredentialIssuerMetadata =
+internal fun CredentialIssuerMetadataJs.toNative(): CredentialIssuerMetadata =
     CredentialIssuerMetadata(
         iss = iss,
         credentialIssuer = credentialIssuer,
     )
 
-internal fun VerificationContextJs.toKotlin(): VerificationContext =
+internal fun VerificationContextJs.toNative(): VerificationContext =
     VerificationContext(
-        credentialIssuerMetadata = credentialIssuerMetadata?.toKotlin(),
+        credentialIssuerMetadata = credentialIssuerMetadata?.toNative(),
         path = path?.toList(),
     )
 
-internal fun W3CCredentialJwtV1Js.toKotlin(): W3CCredentialJwtV1 =
+internal fun W3CCredentialJwtV1Js.toNative(): W3CCredentialJwtV1 =
     W3CCredentialJwtV1(
         header =
             JwtHeader(
@@ -79,14 +79,14 @@ internal fun W3CCredentialJwtV1Js.toKotlin(): W3CCredentialJwtV1 =
             ),
     )
 
-internal fun CredentialEndpointResponseJs.toKotlin(): CredentialEndpointResponse =
+internal fun CredentialEndpointResponseJs.toNative(): CredentialEndpointResponse =
     CredentialEndpointResponse(
         claims =
             mapOf(
                 "credentials" to
                     json.encodeToJsonElement(
                         ListSerializer(W3CCredentialJwtV1.serializer()),
-                        credentials.map { it.toKotlin() },
+                        credentials.map { it.toNative() },
                     ),
             ),
     )
