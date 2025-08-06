@@ -1,5 +1,5 @@
 /**
- * Created by Michael Avoyan on 04/08/2025.
+ * Created by Michael Avoyan on 06/08/2025.
  *
  * Copyright 2022 Velocity Career Labs inc.
  * SPDX-License-Identifier: Apache-2.0
@@ -15,8 +15,6 @@ import io.velocitycareerlabs.velocityexchangeverifiers.api.types.JwtHeader
 import io.velocitycareerlabs.velocityexchangeverifiers.api.types.JwtPayload
 import io.velocitycareerlabs.velocityexchangeverifiers.api.types.VerificationContext
 import io.velocitycareerlabs.velocityexchangeverifiers.api.types.VerificationContextJs
-import io.velocitycareerlabs.velocityexchangeverifiers.api.types.VerificationError
-import io.velocitycareerlabs.velocityexchangeverifiers.api.types.VerificationErrorJs
 import io.velocitycareerlabs.velocityexchangeverifiers.api.types.W3CCredentialJwtV1
 import io.velocitycareerlabs.velocityexchangeverifiers.api.types.W3CCredentialJwtV1Js
 import kotlinx.serialization.builtins.ListSerializer
@@ -35,64 +33,19 @@ private val json =
 
 private val jsonObjectSerializer = JsonObject.serializer()
 
-// ------------ Kotlin -> JS (toJs) ------------
-
-internal fun CredentialIssuerMetadata.toJs(): CredentialIssuerMetadataJs =
-    CredentialIssuerMetadataJs(
-        iss = iss,
-        credentialIssuer = credentialIssuer,
-    )
-
-internal fun VerificationContext.toJs(): VerificationContextJs =
-    VerificationContextJs(
-        credentialIssuerMetadata = credentialIssuerMetadata?.toJs(),
-        path = path?.map { it.toString() }?.toTypedArray(),
-    )
-
-internal fun W3CCredentialJwtV1.toJs(): W3CCredentialJwtV1Js =
-    W3CCredentialJwtV1Js(
-        alg = header?.alg,
-        kid = header?.kid,
-        typ = header?.typ,
-        iss = payload.iss,
-        sub = payload.sub,
-        credentialSchemaJson =
-            payload.vc?.credentialSchema?.let { credentialSchema ->
-                json.encodeToString(jsonObjectSerializer, credentialSchema)
-            },
-        credentialStatusJson =
-            payload.vc?.credentialStatus?.let { credentialStatus ->
-                json.encodeToString(jsonObjectSerializer, credentialStatus)
-            },
-    )
-
-internal fun CredentialEndpointResponse.toJs(): CredentialEndpointResponseJs =
-    CredentialEndpointResponseJs(
-        credentials = credentials?.map { it.toJs() }?.toTypedArray() ?: emptyArray(),
-    )
-
-internal fun VerificationError.toJs(): VerificationErrorJs =
-    VerificationErrorJs(
-        code = code.code,
-        message = message,
-        path = path?.map { it.toString() }?.toTypedArray(),
-    )
-
-// ------------ JS -> Kotlin (toInternal) ------------
-
-internal fun CredentialIssuerMetadataJs.toInternal(): CredentialIssuerMetadata =
+internal fun CredentialIssuerMetadataJs.toKotlin(): CredentialIssuerMetadata =
     CredentialIssuerMetadata(
         iss = iss,
         credentialIssuer = credentialIssuer,
     )
 
-internal fun VerificationContextJs.toInternal(): VerificationContext =
+internal fun VerificationContextJs.toKotlin(): VerificationContext =
     VerificationContext(
-        credentialIssuerMetadata = credentialIssuerMetadata?.toInternal(),
+        credentialIssuerMetadata = credentialIssuerMetadata?.toKotlin(),
         path = path?.toList(),
     )
 
-internal fun W3CCredentialJwtV1Js.toInternal(): W3CCredentialJwtV1 =
+internal fun W3CCredentialJwtV1Js.toKotlin(): W3CCredentialJwtV1 =
     W3CCredentialJwtV1(
         header =
             JwtHeader(
@@ -126,14 +79,14 @@ internal fun W3CCredentialJwtV1Js.toInternal(): W3CCredentialJwtV1 =
             ),
     )
 
-internal fun CredentialEndpointResponseJs.toInternal(): CredentialEndpointResponse =
+internal fun CredentialEndpointResponseJs.toKotlin(): CredentialEndpointResponse =
     CredentialEndpointResponse(
         claims =
             mapOf(
                 "credentials" to
                     json.encodeToJsonElement(
                         ListSerializer(W3CCredentialJwtV1.serializer()),
-                        credentials.map { it.toInternal() },
+                        credentials.map { it.toKotlin() },
                     ),
             ),
     )
