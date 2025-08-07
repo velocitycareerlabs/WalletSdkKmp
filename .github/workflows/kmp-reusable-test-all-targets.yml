@@ -1,4 +1,4 @@
-name: KMP Reusable Tests
+name: KMP Reusable Test All Targets
 
 on:
   workflow_call:
