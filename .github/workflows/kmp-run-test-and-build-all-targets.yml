@@ -1,4 +1,4 @@
-name: KMP Test And Build All Targets
+name: KMP Run Test And Build All Targets
 
 on:
   pull_request:
