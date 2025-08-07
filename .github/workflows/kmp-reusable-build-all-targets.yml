@@ -7,8 +7,9 @@ env:
   JAVA_VERSION: "17"
 
 jobs:
-  run-tests:
+  build-all-targets:
     runs-on: macos-15
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -22,5 +23,26 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v3
 
-      - name: Lint (ktlint)
+      - name: Cache Gradle & Konan dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+            ~/.konan
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Build All KMP Targets
         run: ./gradlew clean assembleAllTargets
+
+      - name: Upload Build Artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kmp-build-artifacts
+          path: |
+            **/build/outputs/**
+            **/build/libs/**
+            **/build/distributions/**

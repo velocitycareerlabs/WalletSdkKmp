@@ -9,6 +9,7 @@ env:
 jobs:
   run-tests:
     runs-on: macos-15
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -22,15 +23,37 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v3
 
+      - name: Cache Gradle & Konan dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+            ~/.konan
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
       - name: Lint (ktlint)
-        run: ./gradlew cleanFormat
+        run: ./gradlew ktlintCheck
+
+      - name: Clean build
+        run: ./gradlew clean
 
       - name: Run All Unit Tests
-        run: ./gradlew allTests
+        # 'check' for all standard tests
+        run: ./gradlew check
 
-      - name: Archive Test Results
+      - name: Archive Test Results (XML)
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: test-results
           path: '**/build/test-results/**/*.xml'
+
+      - name: Archive Test Reports (HTML)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports
+          path: '**/build/reports/tests/**'
