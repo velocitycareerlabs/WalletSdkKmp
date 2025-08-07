@@ -1,5 +1,8 @@
 name: KMP Reusable Test All Targets
 
+on:
+  workflow_call:
+
 env:
   JAVA_VERSION: "17"
 

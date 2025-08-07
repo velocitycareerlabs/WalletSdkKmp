@@ -1,4 +1,4 @@
-name: KMP Test And Build All Targets
+name: KMP RUN Test And Build All Targets
 
 on:
   push:
