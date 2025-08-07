@@ -19,7 +19,7 @@ extra["publishVersion"] = publishVersion
 extra["publishArtifactId"] = publishArtifactId
 extra["publishGroupId"] = publishGroupId
 
-//apply(from = "android-publish.gradle.kts")
+apply(from = "android-publish.gradle.kts")
 
 kotlin {
 
@@ -187,6 +187,11 @@ kotlin {
     }
 }
 
+// This creates an *empty* javadoc jar (required by Maven Central)
+tasks.register<Jar>("javadocJar") {
+    archiveClassifier.set("javadoc")
+}
+
 // --- Aggregate target builds for convenience ---
 tasks.register("assembleAllTargets") {
     group = "build"
@@ -194,6 +199,7 @@ tasks.register("assembleAllTargets") {
         rootProject.tasks.named("kotlinUpgradeYarnLock"),
         "assemble", // Android AAR
         "sourcesJar", // Android sources JAR (auto by withSourcesJar)
+        "javadocJar", // Android Javadoc JAR
         "assembleXCFramework", // iOS
         "jsNodeProductionLibraryDistribution", // JS
 //      "wasmJsJar",

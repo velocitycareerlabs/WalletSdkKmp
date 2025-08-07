@@ -1,50 +1,28 @@
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
 
-// val isPublishTask = gradle.startParameter.taskNames.any { it.contains("publish", ignoreCase = true) }
-// if (isPublishTask) {
-//    afterEvaluate {
-//        // ...publishing block
-//    }
-// } else {
-//    logger.lifecycle("🟡 Skipping publishing config: not a publishing task.")
-// }
-
 val publishArtifactId: String by project
 val publishGroupId: String by project
 val publishVersion: String by project
 
 afterEvaluate {
-    val releaseAar =
-        layout.buildDirectory
-            .file("outputs/aar/$publishArtifactId-$publishVersion.aar")
-            .get()
-            .asFile
-    val rcAar =
-        layout.buildDirectory
-            .file("outputs/aar/$publishArtifactId-$publishVersion-rc.aar")
-            .get()
-            .asFile
-
-    project.extensions.configure<PublishingExtension>("publishing") {
+    extensions.configure<PublishingExtension>("publishing") {
         publications {
+            // ---- RELEASE ----
             create<MavenPublication>("release") {
                 groupId = publishGroupId
                 artifactId = publishArtifactId
                 version = publishVersion
 
-                artifact(releaseAar) {
+                // This will pick up the AAR from the 'assemble' task output directory
+                artifact("$buildDir/outputs/aar/$publishArtifactId-$publishVersion.aar") {
                     builtBy(tasks.named("assemble"))
                 }
-                artifact(tasks.named("generateSourcesJar").get()) {
-                    classifier = "sources"
-                }
-                artifact(tasks.named("generateJavadocJar").get()) {
-                    classifier = "javadoc"
-                }
+                artifact(tasks.named("sourcesJar").get())
+                artifact(tasks.named("javadocJar").get())
 
                 pom {
-                    name.set("vcl")
+                    name.set(publishArtifactId)
                     packaging = "aar"
                     description.set("Velocity Career Labs Android SDK consumer app.")
                     url.set("https://github.com/velocitycareerlabs/WalletSdkKmp")
@@ -63,29 +41,26 @@ afterEvaluate {
                     }
                     scm {
                         connection.set("scm:git:git://github.com/velocitycareerlabs/WalletSdkKmp.git")
-                        developerConnection.set("scm:git:ssh://[email protected]/velocitycareerlabs/WalletSdkKmp")
+                        developerConnection.set("scm:git:ssh://[email protected]/velocitycareerlabs/WalletSdkKmp.git")
                         url.set("https://github.com/velocitycareerlabs/WalletSdkKmp")
                     }
                 }
             }
 
+            // ---- RC ----
             create<MavenPublication>("rc") {
                 groupId = publishGroupId
                 artifactId = publishArtifactId
                 version = "$publishVersion-rc"
 
-                artifact(rcAar) {
+                artifact("$buildDir/outputs/aar/$publishArtifactId-$publishVersion-rc.aar") {
                     builtBy(tasks.named("assemble"))
                 }
-                artifact(tasks.named("generateSourcesJar").get()) {
-                    classifier = "sources"
-                }
-                artifact(tasks.named("generateJavadocJar").get()) {
-                    classifier = "javadoc"
-                }
+                artifact(tasks.named("sourcesJar").get())
+                artifact(tasks.named("javadocJar").get())
 
                 pom {
-                    name.set("vcl")
+                    name.set("$publishArtifactId-rc")
                     packaging = "aar"
                     description.set("Velocity Career Labs Android SDK RC build.")
                     url.set("https://github.com/velocitycareerlabs/WalletSdkKmp")
@@ -104,7 +79,7 @@ afterEvaluate {
                     }
                     scm {
                         connection.set("scm:git:git://github.com/velocitycareerlabs/WalletSdkKmp.git")
-                        developerConnection.set("scm:git:ssh://[email protected]/velocitycareerlabs/WalletSdkKmp")
+                        developerConnection.set("scm:git:ssh://[email protected]/velocitycareerlabs/WalletSdkKmp.git")
                         url.set("https://github.com/velocitycareerlabs/WalletSdkKmp")
                     }
                 }
