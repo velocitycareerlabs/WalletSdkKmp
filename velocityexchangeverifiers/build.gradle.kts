@@ -1,4 +1,3 @@
-import org.gradle.kotlin.dsl.invoke
 import org.jetbrains.kotlin.gradle.plugin.mpp.apple.XCFramework
 
 plugins {
@@ -6,13 +5,21 @@ plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidKotlinMultiplatformLibrary)
     alias(libs.plugins.kotlinx.serialization)
-    alias(libs.plugins.mavenPublish)
     alias(libs.plugins.cocoapods)
+    alias(libs.plugins.mavenPublish)
+    alias(libs.plugins.signing)
 }
 
+// ----- Artifact coordinates -----
 val publishVersion = "0.1.0"
 val publishArtifactId = "velocityexchangeverifiers"
 val publishGroupId = "io.velocitycareerlabs"
+
+extra["publishVersion"] = publishVersion
+extra["publishArtifactId"] = publishArtifactId
+extra["publishGroupId"] = publishGroupId
+
+apply(from = "android-publish.gradle.kts")
 
 kotlin {
 
@@ -35,6 +42,8 @@ kotlin {
             instrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         }
     }
+    // This generates and attaches a proper sources jar for Android (containing *real* androidMain sources)
+    withSourcesJar(publish = true)
 
     // For iOS targets, this is also where you should
     // configure native binary output. For more information, see:
@@ -88,10 +97,7 @@ kotlin {
             customField("types", "$publishArtifactId-js.d.ts")
             customField("module", "$publishArtifactId-js.mjs")
             customField("sideEffects", false)
-            customField(
-                "publishConfig",
-                mapOf("access" to "public"),
-            )
+            customField("publishConfig", mapOf("access" to "public"))
             customField(
                 "keywords",
                 listOf(
@@ -108,10 +114,6 @@ kotlin {
                 ),
             )
         }
-    }
-
-    sourceSets.all {
-        languageSettings.optIn("kotlin.js.ExperimentalJsExport") // Opt-in to @JsExport (since it's experimental)
     }
 
     wasmJs {
@@ -185,13 +187,21 @@ kotlin {
     }
 }
 
-// https://dev.to/touchlab/different-ways-to-distribute-and-integrate-kotlinjs-library-1hg3#:~:text=As%20mentioned%20above%20in%20the,%60package.json
+// This creates an *empty* javadoc jar (required by Maven Central)
+tasks.register<Jar>("javadocJar") {
+    archiveClassifier.set("javadoc")
+}
+
+// --- Aggregate target builds for convenience ---
 tasks.register("assembleAllTargets") {
+    group = "build"
     dependsOn(
-        rootProject.tasks.named("kotlinUpgradeYarnLock"), // fixes yarn.lock before build
+        rootProject.tasks.named("kotlinUpgradeYarnLock"),
         "assemble", // Android AAR
+        "sourcesJar", // Android sources JAR (auto by withSourcesJar)
+        "javadocJar", // Android Javadoc JAR
         "assembleXCFramework", // iOS
-        "jsNodeProductionLibraryDistribution", // Node.js .mjs
+        "jsNodeProductionLibraryDistribution", // JS
 //      "wasmJsJar",
 //      "wasmJsBrowserProductionWebpack",
 //      "jsBrowserProductionWebpack",

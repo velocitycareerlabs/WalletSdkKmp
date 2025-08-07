@@ -1,5 +1,6 @@
 [versions]
-agp = "8.10.1"
+#agp = "8.10.1" this version is the latest for IntelliJ
+agp = "8.12.0"
 android-compileSdk = "36"
 android-minSdk = "24"
 android-targetSdk = "35"
@@ -66,3 +67,4 @@ ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint" }
 kotlinx-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 cocoapods = { id = "org.jetbrains.kotlin.native.cocoapods" }
 mavenPublish = { id = "maven-publish" }
+signing = { id = "signing" }
