@@ -6,13 +6,22 @@ plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidKotlinMultiplatformLibrary)
     alias(libs.plugins.kotlinx.serialization)
-    alias(libs.plugins.mavenPublish)
     alias(libs.plugins.cocoapods)
+    alias(libs.plugins.mavenPublish)
+    id("signing")
 }
 
-val publishVersion = "0.1.0"
-val publishArtifactId = "velocityexchangeverifiers"
-val publishGroupId = "io.velocitycareerlabs"
+// These are required *before* apply(from = ...)
+extra.set("publishVersion", "0.1.0")
+extra.set("publishArtifactId", "velocityexchangeverifiers")
+extra.set("publishGroupId", "io.velocitycareerlabs")
+
+// apply(from = "publish-android.gradle.kts")
+// apply(from = "publish-android-artifacts-tasks.gradle.kts")
+
+val publishArtifactId: String = project.findProperty("publishArtifactId") as? String ?: error("Missing publishArtifactId")
+val publishGroupId: String = project.findProperty("publishGroupId") as? String ?: error("Missing publishGroupId")
+val publishVersion: String = project.findProperty("publishVersion") as? String ?: error("Missing publishVersion")
 
 kotlin {
 
@@ -108,10 +117,6 @@ kotlin {
                 ),
             )
         }
-    }
-
-    sourceSets.all {
-        languageSettings.optIn("kotlin.js.ExperimentalJsExport") // Opt-in to @JsExport (since it's experimental)
     }
 
     wasmJs {
