@@ -1,4 +1,4 @@
-name: KMP-Publish
+name: KMP Publish Android
 
 on:
   workflow_dispatch:
