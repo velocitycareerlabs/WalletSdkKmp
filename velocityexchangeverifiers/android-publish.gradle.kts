@@ -9,6 +9,10 @@ import org.gradle.api.publish.maven.MavenPublication
 //    logger.lifecycle("🟡 Skipping publishing config: not a publishing task.")
 // }
 
+val publishArtifactId: String by project
+val publishGroupId: String by project
+val publishVersion: String by project
+
 afterEvaluate {
     val releaseAar =
         layout.buildDirectory
