@@ -8,5 +8,7 @@ on:
 
 jobs:
   test-on-pr:
-    uses: ./.github/workflows/kmp-reusable-tests.yml ./.github/workflows/kmp-reusable-build-all-targets.yml
-    secrets: inherit
+    uses: ./.github/workflows/kmp-reusable-tests.yml
+
+  build-on-pr:
+    uses: ./.github/workflows/kmp-reusable-build-all-targets.yml
