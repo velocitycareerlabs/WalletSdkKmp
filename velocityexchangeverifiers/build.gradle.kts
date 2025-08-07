@@ -1,6 +1,3 @@
-import org.gradle.api.tasks.Copy
-import org.gradle.api.tasks.bundling.Jar
-import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.mpp.apple.XCFramework
 
 plugins {
@@ -22,7 +19,7 @@ extra["publishVersion"] = publishVersion
 extra["publishArtifactId"] = publishArtifactId
 extra["publishGroupId"] = publishGroupId
 
-// apply(from = "android-publish.gradle.kts")
+//apply(from = "android-publish.gradle.kts")
 
 kotlin {
 
@@ -45,6 +42,8 @@ kotlin {
             instrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         }
     }
+    // This generates and attaches a proper sources jar for Android (containing *real* androidMain sources)
+    withSourcesJar(publish = true)
 
     // For iOS targets, this is also where you should
     // configure native binary output. For more information, see:
@@ -188,96 +187,18 @@ kotlin {
     }
 }
 
+// --- Aggregate target builds for convenience ---
 tasks.register("assembleAllTargets") {
+    group = "build"
     dependsOn(
         rootProject.tasks.named("kotlinUpgradeYarnLock"),
         "assemble", // Android AAR
+        "sourcesJar", // Android sources JAR (auto by withSourcesJar)
         "assembleXCFramework", // iOS
-        "jsNodeProductionLibraryDistribution", // Node.js .mjs
+        "jsNodeProductionLibraryDistribution", // JS
+//      "wasmJsJar",
+//      "wasmJsBrowserProductionWebpack",
+//      "jsBrowserProductionWebpack",
+//      "jsJar",
     )
-}
-
-// === Android artifact publishing tasks ===
-// NOTE:
-// This is a common, ugly wart of how Gradle’s script plugin classloaders work.
-// So it's painful to move Android specific tasks to the separate file.
-afterEvaluate {
-    val kotlinExt = project.extensions.getByType<KotlinMultiplatformExtension>()
-    val androidMainSrcDirs =
-        kotlinExt.sourceSets
-            .findByName("androidMain")
-            ?.kotlin
-            ?.srcDirs ?: emptySet<File>()
-
-    tasks.register<Jar>("generateSourcesJar") {
-        group = "assemble"
-        archiveClassifier.set("sources")
-        archiveBaseName.set(publishArtifactId.lowercase())
-        from(androidMainSrcDirs)
-    }
-
-    tasks.register<Jar>("generateJavadocJar") {
-        group = "assemble"
-        archiveClassifier.set("javadoc")
-        archiveBaseName.set(publishArtifactId.lowercase())
-        doFirst {
-            val dummyDir =
-                layout.buildDirectory
-                    .get()
-                    .dir("empty-javadoc")
-                    .asFile
-            dummyDir.mkdirs()
-            val dummyJava = File(dummyDir, "placeholder.java")
-            if (!dummyJava.exists()) {
-                dummyJava.writeText("/** Placeholder for javadoc */")
-            }
-            from(dummyDir)
-        }
-    }
-
-    tasks.register("generateSourcesAndJavadocJar") {
-        group = "assemble"
-        description = "Generates sources.jar and javadoc.jar"
-        dependsOn("generateSourcesJar", "generateJavadocJar")
-    }
-
-    tasks.register("assembleAllRelease") {
-        group = "assemble"
-        description = "Generates AAR, sources.jar and javadoc.jar for release"
-        dependsOn("assembleRelease", "generateSourcesAndJavadocJar")
-    }
-
-    tasks.register("assembleAllRc") {
-        group = "assemble"
-        description = "Generates AAR, sources.jar and javadoc.jar for rc"
-        dependsOn("assembleRc", "generateSourcesAndJavadocJar")
-    }
-
-    tasks.register("verifyExpectedArtifactsExist") {
-        group = "verification"
-        description = "Prints the contents of key artifact directories"
-        doLast {
-            fun printDirContents(
-                title: String,
-                dirPath: String,
-            ) {
-                println("📂 $title Contents of $dirPath/")
-                val dir = file(dirPath)
-                if (dir.exists() && dir.isDirectory) {
-                    dir.listFiles()?.forEach { println(" - ${it.name}") }
-                } else {
-                    println("❌ $title Directory does not exist: $dirPath")
-                }
-            }
-            printDirContents("AAR", "build/outputs/aar")
-            printDirContents("LIBS", "build/libs")
-        }
-    }
-
-    tasks.register<Copy>("stageArtifacts") {
-        val mavenPath = "${publishGroupId.replace(".", "/")}/$publishArtifactId/$publishVersion/"
-        from(layout.buildDirectory.dir("outputs/aar")) { include("**/*.aar") }
-        from(layout.buildDirectory.dir("libs")) { include("**/*.jar") }
-        into("target/staging-deploy/$mavenPath")
-    }
 }

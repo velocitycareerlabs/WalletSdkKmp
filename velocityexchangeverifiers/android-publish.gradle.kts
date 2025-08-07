@@ -1,3 +1,4 @@
+import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
 
 // val isPublishTask = gradle.startParameter.taskNames.any { it.contains("publish", ignoreCase = true) }
@@ -25,7 +26,7 @@ afterEvaluate {
             .get()
             .asFile
 
-    publishing {
+    project.extensions.configure<PublishingExtension>("publishing") {
         publications {
             create<MavenPublication>("release") {
                 groupId = publishGroupId
@@ -33,7 +34,7 @@ afterEvaluate {
                 version = publishVersion
 
                 artifact(releaseAar) {
-                    builtBy(tasks.named("assembleRelease"))
+                    builtBy(tasks.named("assemble"))
                 }
                 artifact(tasks.named("generateSourcesJar").get()) {
                     classifier = "sources"
@@ -74,7 +75,7 @@ afterEvaluate {
                 version = "$publishVersion-rc"
 
                 artifact(rcAar) {
-                    builtBy(tasks.named("assembleRc"))
+                    builtBy(tasks.named("assemble"))
                 }
                 artifact(tasks.named("generateSourcesJar").get()) {
                     classifier = "sources"
