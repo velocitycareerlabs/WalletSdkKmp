@@ -13,7 +13,7 @@ on:
 jobs:
   test-on-pr:
     name: Run KMP Tests
-    uses: ./.github/workflows/kmp-reusable-tests.yml
+    uses: ./.github/workflows/kmp-reusable-test-all-targets.yml
     secrets: inherit
 
   build-on-pr:
