@@ -23,18 +23,22 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v3
 
-      - name: Gradle cache
+      - name: Cache Gradle & Konan dependencies
         uses: actions/cache@v4
         with:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
-          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+            ~/.konan
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
           restore-keys: |
-            gradle-${{ runner.os }}-
+            ${{ runner.os }}-gradle-
 
       - name: Lint (ktlint)
-        run: ./gradlew cleanFormat
+        run: ./gradlew ktlintCheck
+
+      - name: Clean build
+        run: ./gradlew clean
 
       - name: Run All Unit Tests
         # 'check' for all standard tests

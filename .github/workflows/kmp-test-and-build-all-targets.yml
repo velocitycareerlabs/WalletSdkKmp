@@ -1,6 +1,10 @@
-name: KMP Run Test And Build All Targets
+name: KMP Test And Build All Targets
 
 on:
+  push:
+    branches:
+      - main
+      - release/**
   pull_request:
     branches:
       - main
@@ -8,9 +12,11 @@ on:
 
 jobs:
   test-on-pr:
+    name: Run KMP Tests
     uses: ./.github/workflows/kmp-reusable-tests.yml
     secrets: inherit
 
   build-on-pr:
+    name: Build All KMP Targets
     uses: ./.github/workflows/kmp-reusable-build-all-targets.yml
     secrets: inherit
