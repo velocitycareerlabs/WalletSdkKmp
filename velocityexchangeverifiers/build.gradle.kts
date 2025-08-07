@@ -7,7 +7,7 @@ plugins {
     alias(libs.plugins.kotlinx.serialization)
     alias(libs.plugins.cocoapods)
     alias(libs.plugins.mavenPublish)
-    id("signing")
+    alias(libs.plugins.signing)
 }
 
 // ----- Artifact coordinates -----
