@@ -6,6 +6,21 @@ val publishGroupId: String by project
 val publishVersion: String by project
 
 afterEvaluate {
+    // Use assemble; RC vs Release is only the version string
+    val aarTaskName = "assemble"
+
+    val aarRelPath = "outputs/aar/${project.name}.aar"
+
+    val aarFile = layout.buildDirectory.file(aarRelPath)
+
+    val sourcesJarTaskName =
+        listOf(
+            "sourcesJar",
+            "androidSourcesJar",
+            "androidReleaseSourcesJar",
+        ).firstOrNull { tasks.findByName(it) != null }
+            ?: error("No sourcesJar task found. Ensure withSourcesJar(publish = true) is enabled in kotlin { androidLibrary { ... } }")
+
     extensions.configure<PublishingExtension>("publishing") {
         publications {
             // ---- RELEASE ----
@@ -14,12 +29,9 @@ afterEvaluate {
                 artifactId = publishArtifactId
                 version = publishVersion
 
-                // This will pick up the AAR from the 'assemble' task output directory
-                artifact("$buildDir/outputs/aar/$publishArtifactId-$publishVersion.aar") {
-                    builtBy(tasks.named("assemble"))
-                }
-                artifact(tasks.named("sourcesJar").get())
-                artifact(tasks.named("javadocJar").get())
+                artifact(aarFile) { builtBy(tasks.named(aarTaskName)) }
+                artifact(tasks.named(sourcesJarTaskName).get())
+                artifact(tasks.named("androidDokkaJavadocJar").get())
 
                 pom {
                     name.set(publishArtifactId)
@@ -41,7 +53,7 @@ afterEvaluate {
                     }
                     scm {
                         connection.set("scm:git:git://github.com/velocitycareerlabs/WalletSdkKmp.git")
-                        developerConnection.set("scm:git:ssh://[email protected]/velocitycareerlabs/WalletSdkKmp.git")
+                        developerConnection.set("scm:git:ssh://git@github.com/velocitycareerlabs/WalletSdkKmp.git")
                         url.set("https://github.com/velocitycareerlabs/WalletSdkKmp")
                     }
                 }
@@ -53,11 +65,9 @@ afterEvaluate {
                 artifactId = publishArtifactId
                 version = "$publishVersion-rc"
 
-                artifact("$buildDir/outputs/aar/$publishArtifactId-$publishVersion-rc.aar") {
-                    builtBy(tasks.named("assemble"))
-                }
-                artifact(tasks.named("sourcesJar").get())
-                artifact(tasks.named("javadocJar").get())
+                artifact(aarFile) { builtBy(tasks.named(aarTaskName)) }
+                artifact(tasks.named(sourcesJarTaskName).get())
+                artifact(tasks.named("androidDokkaJavadocJar").get())
 
                 pom {
                     name.set("$publishArtifactId-rc")
@@ -79,7 +89,7 @@ afterEvaluate {
                     }
                     scm {
                         connection.set("scm:git:git://github.com/velocitycareerlabs/WalletSdkKmp.git")
-                        developerConnection.set("scm:git:ssh://[email protected]/velocitycareerlabs/WalletSdkKmp.git")
+                        developerConnection.set("scm:git:ssh://git@github.com/velocitycareerlabs/WalletSdkKmp.git")
                         url.set("https://github.com/velocitycareerlabs/WalletSdkKmp")
                     }
                 }
