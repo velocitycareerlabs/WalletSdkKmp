@@ -46,7 +46,7 @@ jobs:
       - name: 🧪 Build AAR + Sources + Javadoc
         run: |
           ./gradlew clean \
-            :velocityexchangeverifiers:assemble{{ github.event.inputs.environment == 'rc' && 'Rc' || 'Release' }} \
+            :velocityexchangeverifiers:assemble \
             -PprojectVersion=${RELEASE_VERSION} \
             -Pprerelease=${{ github.event.inputs.environment == 'rc' }} \
             --stacktrace
