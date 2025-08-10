@@ -223,19 +223,6 @@ tasks.register<Jar>("androidDokkaJavadocJar") {
 }
 
 // Aggregate build helper
-// Remove any assembleRelease/assembleRc registration
-
-tasks.register("assembleAllTargets") {
-    group = "build"
-    dependsOn(
-        rootProject.tasks.named("kotlinUpgradeYarnLock"),
-        tasks.named("assemble"),
-        tasks.named("androidDokkaJavadocJar"),
-        tasks.matching { it.name == "assembleXCFramework" },
-        tasks.matching { it.name == "jsNodeProductionLibraryDistribution" },
-    )
-}
-
 tasks.register("verifyExpectedArtifactsExist") {
     group = "verification"
     description = "Prints the contents of key artifact directories"

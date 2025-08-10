@@ -31,9 +31,15 @@ jobs:
       - name: 🛠️ Set up Gradle
         uses: gradle/actions/setup-gradle@v3
 
-      - name: 📝 Get version from build.gradle
+#      - name: 📝 Get version from build.gradle
+#        run: |
+#          VERSION=$(grep 'publishVersion *= *".*"' velocityexchangeverifiers/build.gradle | sed -n 's/.*publishVersion *= *"\([^"]*\)".*/\1/p')
+#          echo "RELEASE_VERSION=$VERSION" >> $GITHUB_ENV
+#          echo "Found version: $VERSION"
+      - name: 📝 Get version from gradle.properties
         run: |
-          VERSION=$(grep 'publishVersion *= *".*"' velocityexchangeverifiers/build.gradle | sed -n 's/.*publishVersion *= *"\([^"]*\)".*/\1/p')
+          VERSION=$(grep '^PUBLISH_VERSION=' gradle.properties | cut -d'=' -f2 | tr -d '[:space:]')
+          if [ -z "$VERSION" ]; then echo "PUBLISH_VERSION missing in gradle.properties"; exit 1; fi
           echo "RELEASE_VERSION=$VERSION" >> $GITHUB_ENV
           echo "Found version: $VERSION"
 
