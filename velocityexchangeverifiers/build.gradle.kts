@@ -238,3 +238,36 @@ tasks.register("assembleAllTargets") {
         tasks.matching { it.name == "jsNodeProductionLibraryDistribution" },
     )
 }
+
+
+tasks.register("verifyExpectedArtifactsExist") {
+    group = "verification"
+    description = "Prints the contents of key artifact directories"
+
+    doLast {
+        fun printDirContents(title: String, dirPath: String) {
+            println("📂 Contents of $dirPath/")
+            val dir = file(dirPath)
+            if (dir.exists() && dir.isDirectory) {
+                dir.listFiles()?.forEach { println(" - ${it.name}") }
+            } else {
+                println("❌ Directory does not exist: $dirPath")
+            }
+        }
+
+        printDirContents("AAR", "build/outputs/aar")
+        printDirContents("LIBS", "build/libs")
+    }
+}
+
+tasks.register<Copy>("stageArtifacts") {
+    val mavenPath = "${publishGroupId.replace('.', '/')}/${publishArtifactId}/${publishVersion}/"
+
+    from(layout.buildDirectory.dir("outputs/aar")) {
+        include("**/*.aar")
+    }
+    from(layout.buildDirectory.dir("libs")) {
+        include("**/*.jar")
+    }
+    into(layout.projectDirectory.dir("target/staging-deploy/$mavenPath"))
+}
