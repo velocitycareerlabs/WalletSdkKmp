@@ -27,6 +27,7 @@ core = "1.7.0"
 waltid-version = "0.14.0"
 ktlint = "13.0.0"
 kotlinxSerializationJson = "1.9.0"
+dokka = "1.9.20"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -67,3 +68,4 @@ kotlinx-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", vers
 cocoapods = { id = "org.jetbrains.kotlin.native.cocoapods" }
 mavenPublish = { id = "maven-publish" }
 signing = { id = "signing" }
+dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }

@@ -1,19 +1,24 @@
+import org.gradle.kotlin.dsl.withType
+import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.gradle.plugin.mpp.apple.XCFramework
 
 plugins {
-    alias(libs.plugins.androidLibrary) apply false
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidKotlinMultiplatformLibrary)
     alias(libs.plugins.kotlinx.serialization)
     alias(libs.plugins.cocoapods)
     alias(libs.plugins.mavenPublish)
     alias(libs.plugins.signing)
+    alias(libs.plugins.dokka)
 }
 
 // ----- Artifact coordinates -----
-val publishVersion = "0.1.0"
-val publishArtifactId = "velocityexchangeverifiers"
-val publishGroupId = "io.velocitycareerlabs"
+val publishGroupId = providers.gradleProperty("PUBLISH_GROUP_ID").get()
+val publishArtifactId = providers.gradleProperty("PUBLISH_ARTIFACT_ID").get()
+val publishVersion = providers.gradleProperty("PUBLISH_VERSION").get()
+
+group = publishGroupId
+version = publishVersion
 
 extra["publishVersion"] = publishVersion
 extra["publishArtifactId"] = publishArtifactId
@@ -22,6 +27,7 @@ extra["publishGroupId"] = publishGroupId
 apply(from = "android-publish.gradle.kts")
 
 kotlin {
+    jvmToolchain(17)
 
 //    explicitApi() // Requires explicit visibility and return types
 
@@ -31,8 +37,21 @@ kotlin {
     androidLibrary {
         version = publishVersion
         namespace = "$publishGroupId.$publishArtifactId"
-        compileSdk = 36
-        minSdk = 24
+
+        // read from a single source of truth
+        compileSdk =
+            providers
+                .gradleProperty("ANDROID_COMPILE_SDK")
+                .map(String::toInt)
+//            .orElse(35)
+                .get()
+
+        minSdk =
+            providers
+                .gradleProperty("ANDROID_MIN_SDK")
+                .map(String::toInt)
+//            .orElse(24)
+                .get()
 
         withHostTestBuilder { }
 
@@ -42,7 +61,8 @@ kotlin {
             instrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         }
     }
-    // This generates and attaches a proper sources jar for Android (containing *real* androidMain sources)
+
+    // Android sources JAR (new Android DSL)
     withSourcesJar(publish = true)
 
     // For iOS targets, this is also where you should
@@ -139,7 +159,7 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                implementation(libs.kotlin.stdlib)
+//                implementation(libs.kotlin.stdlib)
                 implementation(libs.kotlinx.serialization.json)
                 implementation(libs.kotlinx.coroutines.core)
                 implementation(libs.kotlinx.coroutines.test)
@@ -150,6 +170,7 @@ kotlin {
         commonTest {
             dependencies {
                 implementation(libs.kotlin.test)
+                implementation(libs.kotlinx.coroutines.test)
             }
         }
 
@@ -187,24 +208,33 @@ kotlin {
     }
 }
 
-// This creates an *empty* javadoc jar (required by Maven Central)
-tasks.register<Jar>("javadocJar") {
-    archiveClassifier.set("javadoc")
+// Dokka config (safe for KMP; no README includes)
+tasks.withType<DokkaTask>().configureEach {
+    dokkaSourceSets.configureEach {
+        skipEmptyPackages.set(true)
+        moduleName.set("velocityexchangeverifiers")
+    }
 }
 
-// --- Aggregate target builds for convenience ---
+// Build a real javadoc jar from Dokka HTML output
+tasks.register<Jar>("androidDokkaJavadocJar") {
+    group = JavaBasePlugin.DOCUMENTATION_GROUP
+    description = "Assembles Dokka HTML into a javadoc-classified jar for Maven Central"
+    archiveClassifier.set("javadoc")
+    dependsOn(tasks.named("dokkaHtml"))
+    from(layout.buildDirectory.dir("dokka/html"))
+}
+
+// Aggregate build helper
+// Remove any assembleRelease/assembleRc registration
+
 tasks.register("assembleAllTargets") {
     group = "build"
     dependsOn(
         rootProject.tasks.named("kotlinUpgradeYarnLock"),
-        "assemble", // Android AAR
-        "sourcesJar", // Android sources JAR (auto by withSourcesJar)
-        "javadocJar", // Android Javadoc JAR
-        "assembleXCFramework", // iOS
-        "jsNodeProductionLibraryDistribution", // JS
-//      "wasmJsJar",
-//      "wasmJsBrowserProductionWebpack",
-//      "jsBrowserProductionWebpack",
-//      "jsJar",
+        tasks.named("assemble"),
+        tasks.named("androidDokkaJavadocJar"),
+        tasks.matching { it.name == "assembleXCFramework" },
+        tasks.matching { it.name == "jsNodeProductionLibraryDistribution" },
     )
 }
