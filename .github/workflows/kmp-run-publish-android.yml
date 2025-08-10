@@ -75,9 +75,6 @@ jobs:
         run: |
           ls -R velocityexchangeverifiers/target/staging-deploy
 
-      - run: |
-          echo "@@@@@ RELEASE_VERSION=${{ env.RELEASE_VERSION }}" >> $GITHUB_ENV
-
       - name: 🚀 Run JReleaser full-release
         uses: jreleaser/release-action@v2
         with:
