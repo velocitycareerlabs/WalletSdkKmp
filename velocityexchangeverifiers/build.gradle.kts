@@ -239,13 +239,15 @@ tasks.register("assembleAllTargets") {
     )
 }
 
-
 tasks.register("verifyExpectedArtifactsExist") {
     group = "verification"
     description = "Prints the contents of key artifact directories"
 
     doLast {
-        fun printDirContents(title: String, dirPath: String) {
+        fun printDirContents(
+            title: String,
+            dirPath: String,
+        ) {
             println("📂 Contents of $dirPath/")
             val dir = file(dirPath)
             if (dir.exists() && dir.isDirectory) {
@@ -261,7 +263,7 @@ tasks.register("verifyExpectedArtifactsExist") {
 }
 
 tasks.register<Copy>("stageArtifacts") {
-    val mavenPath = "${publishGroupId.replace('.', '/')}/${publishArtifactId}/${publishVersion}/"
+    val mavenPath = "${publishGroupId.replace('.', '/')}/$publishArtifactId/$publishVersion/"
 
     from(layout.buildDirectory.dir("outputs/aar")) {
         include("**/*.aar")
