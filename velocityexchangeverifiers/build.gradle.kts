@@ -12,9 +12,9 @@ plugins {
     alias(libs.plugins.dokka)
 }
 
-val publishGroupId = "io.velocitycareerlabs" // providers.gradleProperty("PUBLISH_GROUP_ID").get()
-val publishArtifactId = "velocityexchangeverifiers" // providers.gradleProperty("PUBLISH_ARTIFACT_ID").get()
-val publishVersion = "0.1.0" // providers.gradleProperty("PUBLISH_VERSION").get()
+val publishGroupId = providers.gradleProperty("PUBLISH_GROUP_ID").get()
+val publishArtifactId = providers.gradleProperty("PUBLISH_ARTIFACT_ID").get()
+val publishVersion = providers.gradleProperty("PUBLISH_VERSION").get()
 
 group = publishGroupId
 version = publishVersion
@@ -38,19 +38,17 @@ kotlin {
         namespace = "$publishGroupId.$publishArtifactId"
 
         // read from a single source of truth
-        compileSdk = 36
-//            providers
-//                .gradleProperty("ANDROID_COMPILE_SDK")
-//                .map(String::toInt)
-// //            .orElse(35)
-//                .get()
+        compileSdk =
+            providers
+                .gradleProperty("ANDROID_COMPILE_SDK")
+                .map(String::toInt)
+                .get()
 
-        minSdk = 24
-//            providers
-//                .gradleProperty("ANDROID_MIN_SDK")
-//                .map(String::toInt)
-// //            .orElse(24)
-//                .get()
+        minSdk =
+            providers
+                .gradleProperty("ANDROID_MIN_SDK")
+                .map(String::toInt)
+                .get()
 
         withHostTestBuilder { }
 
