@@ -176,7 +176,6 @@ kotlin {
 //                implementation(libs.kotlin.stdlib)
                 implementation(libs.kotlinx.serialization.json)
                 implementation(libs.kotlinx.coroutines.core)
-                implementation(libs.kotlinx.coroutines.test)
                 // Add KMP dependencies here
             }
         }
@@ -284,7 +283,7 @@ tasks.register("verifyExpectedArtifactsExist") {
             title: String,
             dirPath: String,
         ) {
-            println("📂 Contents of $dirPath/")
+            println("📂 $title: Contents of $dirPath/")
             val dir = file(dirPath)
             if (dir.exists() && dir.isDirectory) {
                 dir.listFiles()?.forEach { println(" - ${it.name}") }
@@ -298,18 +297,21 @@ tasks.register("verifyExpectedArtifactsExist") {
     }
 }
 
+tasks.register<Delete>("cleanStaging") {
+    delete(layout.projectDirectory.dir("target/staging-deploy/io/velocitycareerlabs/velocityexchangeverifiers"))
+}
+
 // Stage for JReleaser (Android only, Maven friendly names)
 tasks.register<Sync>("stageArtifacts") {
+    dependsOn("cleanStaging")
     val groupPath = publishGroupId.replace('.', '/')
     val mavenPath = "$groupPath/$publishArtifactId/$effectiveVersion/"
-    val dest = layout.projectDirectory.dir("target/staging-deploy/$mavenPath")
-    into(dest)
+    into(layout.projectDirectory.dir("target/staging-deploy/$mavenPath"))
 
     // AAR -> velocityexchangeverifiers-<effectiveVersion>.aar
     from(layout.buildDirectory.dir("outputs/aar")) {
         include("*.aar")
         rename { "$publishArtifactId-$effectiveVersion.aar" }
-        includeEmptyDirs = false
     }
 
     // Sources and Javadoc jars
@@ -317,13 +319,12 @@ tasks.register<Sync>("stageArtifacts") {
     from(layout.buildDirectory.dir("libs")) {
         include("**/*sources*.jar", "**/*javadoc*.jar")
         exclude("**/*-metadata.jar*", "**/*-kotlin-tooling-metadata.jar")
-        rename { name ->
+        rename { n ->
             when {
-                name.contains("sources") -> "$publishArtifactId-$effectiveVersion-sources.jar"
-                name.contains("javadoc") -> "$publishArtifactId-$effectiveVersion-javadoc.jar"
-                else -> name
+                n.contains("sources") -> "$publishArtifactId-$effectiveVersion-sources.jar"
+                n.contains("javadoc") -> "$publishArtifactId-$effectiveVersion-javadoc.jar"
+                else -> n
             }
         }
-        includeEmptyDirs = false
     }
 }

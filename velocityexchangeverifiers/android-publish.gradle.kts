@@ -10,11 +10,11 @@ val effectiveVersion: String =
         ?: publishVersion
 
 afterEvaluate {
-    // Use assemble; RC vs Release is only the version string
+    // We build a single AAR with the new KMP Android DSL; RC vs Release is only the version string
     val aarTaskName = "assemble"
 
+    // New DSL writes <module>.aar
     val aarRelPath = "outputs/aar/${project.name}.aar"
-
     val aarFile = layout.buildDirectory.file(aarRelPath)
 
     val sourcesJarTaskName =
@@ -23,7 +23,10 @@ afterEvaluate {
             "androidSourcesJar",
             "androidReleaseSourcesJar",
         ).firstOrNull { tasks.findByName(it) != null }
-            ?: error("No sourcesJar task found. Ensure withSourcesJar(publish = true) is enabled in kotlin { androidLibrary { ... } }")
+            ?: error(
+                "No sourcesJar task found. Ensure withSourcesJar(publish = true) " +
+                    "is enabled in kotlin { androidLibrary { ... } }",
+            )
 
     extensions.configure<PublishingExtension>("publishing") {
         publications {
@@ -74,7 +77,7 @@ afterEvaluate {
                 artifact(tasks.named("androidDokkaJavadocJar").get())
 
                 pom {
-                    name.set("$publishArtifactId-rc")
+                    name.set(publishArtifactId)
                     packaging = "aar"
                     description.set("Velocity Career Labs Android SDK RC build.")
                     url.set("https://github.com/velocitycareerlabs/WalletSdkKmp")
@@ -98,6 +101,10 @@ afterEvaluate {
                     }
                 }
             }
+        }
+        // Optional: make local testing easy (publishing to mavenLocal)
+        repositories {
+            mavenLocal()
         }
     }
 }

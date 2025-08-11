@@ -14,6 +14,10 @@ on:
 env:
   JAVA_VERSION: "17"
 
+permissions:
+  contents: write
+  packages: write
+
 jobs:
   release-android-sdk:
     runs-on: macos-15
@@ -31,20 +35,28 @@ jobs:
       - name: 🛠️ Set up Gradle
         uses: gradle/actions/setup-gradle@v3
 
-#      - name: 📝 Get version from build.gradle
-#        run: |
-#          VERSION=$(grep 'publishVersion *= *".*"' velocityexchangeverifiers/build.gradle | sed -n 's/.*publishVersion *= *"\([^"]*\)".*/\1/p')
-#          echo "RELEASE_VERSION=$VERSION" >> $GITHUB_ENV
-#          echo "Found version: $VERSION"
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      # - name: 📝 Get version from build.gradle
+      #   run: |
+      #     VERSION=$(grep 'publishVersion *= *".*"' velocityexchangeverifiers/build.gradle | sed -n 's/.*publishVersion *= *"\([^"]*\)".*/\1/p')
+      #     echo "RELEASE_VERSION=$VERSION" >> $GITHUB_ENV
+      #     echo "Found version: $VERSION"
+
       - name: 📝 Get version from gradle.properties
+        shell: bash
         run: |
+          set -euo pipefail
           VERSION=$(grep '^PUBLISH_VERSION=' gradle.properties | cut -d'=' -f2 | tr -d '[:space:]')
           if [ -z "$VERSION" ]; then echo "PUBLISH_VERSION missing in gradle.properties"; exit 1; fi
           echo "RELEASE_VERSION=$VERSION" >> $GITHUB_ENV
           echo "Found version: $VERSION"
 
       - name: 🔧 Set publication name and POM file name
+        shell: bash
         run: |
+          set -euo pipefail
           if [ "${{ github.event.inputs.environment }}" = "rc" ]; then
             echo "PUBLICATION_NAME=rc" >> $GITHUB_ENV
             echo "EFFECTIVE_VERSION=${RELEASE_VERSION}-rc" >> $GITHUB_ENV
@@ -55,7 +67,9 @@ jobs:
           echo "POM_FILE_NAME=velocityexchangeverifiers-${EFFECTIVE_VERSION}.pom" >> $GITHUB_ENV
 
       - name: 🧪 Build AAR + Sources + Javadoc
+        shell: bash
         run: |
+          set -euo pipefail
             ./gradlew :velocityexchangeverifiers:clean \
             :velocityexchangeverifiers:assembleAndroid \
             -PprojectVersion=${RELEASE_VERSION} \
@@ -64,15 +78,23 @@ jobs:
 
       - name: ✅ Verify expected artifacts exist
         run: |
-          ./gradlew \
-            :velocityexchangeverifiers:verifyExpectedArtifactsExist
+          ./gradlew :velocityexchangeverifiers:verifyExpectedArtifactsExist
+
+      - name: 🧹 Clean staging root
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf velocityexchangeverifiers/target/staging-deploy/io/velocitycareerlabs/velocityexchangeverifiers
+          mkdir -p velocityexchangeverifiers/target/staging-deploy/io/velocitycareerlabs/velocityexchangeverifiers
 
       - name: 📦 Stage Artifacts
         run: |
           ./gradlew :velocityexchangeverifiers:stageArtifacts
 
       - name: 🧪 Generate POM File
+        shell: bash
         run: |
+          set -euo pipefail
           ./gradlew :velocityexchangeverifiers:generatePomFileFor${{ env.PUBLICATION_NAME }}Publication \
             -PprojectVersion=${RELEASE_VERSION} -Pprerelease=${{ github.event.inputs.environment == 'rc' }}
           mkdir -p velocityexchangeverifiers/target/staging-deploy/io/velocitycareerlabs/velocityexchangeverifiers/${{ env.EFFECTIVE_VERSION }}
@@ -82,6 +104,47 @@ jobs:
       - name: 📂 List staged artifacts
         run: |
           ls -R velocityexchangeverifiers/target/staging-deploy
+
+      - name: 🔒 Guard staged contents
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=velocityexchangeverifiers/target/staging-deploy/io/velocitycareerlabs/velocityexchangeverifiers
+          echo "Contents of $BASE:"
+          ls -1 "$BASE" || true
+          for d in "$BASE"/*; do
+            [ -d "$d" ] || continue
+            bn=$(basename "$d")
+            if [ "$bn" != "${EFFECTIVE_VERSION}" ]; then
+              echo "Unexpected version dir present: $bn"
+              exit 1
+            fi
+          done
+          ls -1 "$BASE/${EFFECTIVE_VERSION}"
+
+      - name: 🔎 Verify POM version matches EFFECTIVE_VERSION
+        shell: bash
+        run: |
+          set -euo pipefail
+          POM=velocityexchangeverifiers/target/staging-deploy/io/velocitycareerlabs/velocityexchangeverifiers/${EFFECTIVE_VERSION}/velocityexchangeverifiers-${EFFECTIVE_VERSION}.pom
+          grep -q "<version>${EFFECTIVE_VERSION}</version>" "$POM" || { echo "POM version mismatch"; exit 1; }
+
+      - name: 📜 Show staged file names
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir=velocityexchangeverifiers/target/staging-deploy/io/velocitycareerlabs/velocityexchangeverifiers/${EFFECTIVE_VERSION}
+          ls -l "$dir"
+
+      - name: Validate staged files
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir=velocityexchangeverifiers/target/staging-deploy/io/velocitycareerlabs/velocityexchangeverifiers/${EFFECTIVE_VERSION}
+          test -f "$dir/velocityexchangeverifiers-${EFFECTIVE_VERSION}.pom"
+          test -f "$dir/velocityexchangeverifiers-${EFFECTIVE_VERSION}.aar"
+          test -f "$dir/velocityexchangeverifiers-${EFFECTIVE_VERSION}-sources.jar"
+          test -f "$dir/velocityexchangeverifiers-${EFFECTIVE_VERSION}-javadoc.jar"
 
       - name: 🚀 Run JReleaser full-release
         uses: jreleaser/release-action@v2
