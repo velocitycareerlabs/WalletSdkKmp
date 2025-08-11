@@ -5,6 +5,9 @@ val publishArtifactId: String by project
 val publishGroupId: String by project
 val publishVersion: String by project
 
+val effectiveVersion: String = (project.extra["effectiveVersion"] as? String)
+    ?: publishVersion
+
 afterEvaluate {
     // Use assemble; RC vs Release is only the version string
     val aarTaskName = "assemble"
@@ -27,7 +30,7 @@ afterEvaluate {
             create<MavenPublication>("release") {
                 groupId = publishGroupId
                 artifactId = publishArtifactId
-                version = publishVersion
+                version = effectiveVersion
 
                 artifact(aarFile) { builtBy(tasks.named(aarTaskName)) }
                 artifact(tasks.named(sourcesJarTaskName).get())
@@ -63,7 +66,7 @@ afterEvaluate {
             create<MavenPublication>("rc") {
                 groupId = publishGroupId
                 artifactId = publishArtifactId
-                version = "$publishVersion-rc"
+                version = effectiveVersion
 
                 artifact(aarFile) { builtBy(tasks.named(aarTaskName)) }
                 artifact(tasks.named(sourcesJarTaskName).get())

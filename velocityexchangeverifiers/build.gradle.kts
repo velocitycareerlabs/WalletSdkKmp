@@ -16,12 +16,19 @@ val publishGroupId = providers.gradleProperty("PUBLISH_GROUP_ID").get()
 val publishArtifactId = providers.gradleProperty("PUBLISH_ARTIFACT_ID").get()
 val publishVersion = providers.gradleProperty("PUBLISH_VERSION").get()
 
+val cliProjectVersion= providers.gradleProperty("projectVersion").orNull
+val isPrerelease = providers.gradleProperty("prerelease").map { it.toBoolean() }.orElse(false).get()
+
+val effectiveBase = cliProjectVersion ?: publishVersion
+val effectiveVersion = if (isPrerelease) "$effectiveBase-rc" else effectiveBase
+
 group = publishGroupId
 version = publishVersion
 
 extra["publishVersion"] = publishVersion
 extra["publishArtifactId"] = publishArtifactId
 extra["publishGroupId"] = publishGroupId
+extra["effectiveVersion"] = effectiveVersion
 
 apply(from = "android-publish.gradle.kts")
 
@@ -286,14 +293,32 @@ tasks.register("verifyExpectedArtifactsExist") {
     }
 }
 
+// Stage for JReleaser (Android only, Maven friendly names)
 tasks.register<Copy>("stageArtifacts") {
-    val mavenPath = "${publishGroupId.replace('.', '/')}/$publishArtifactId/$publishVersion/"
+    val groupPath = publishGroupId.replace('.', '/')
+    val mavenPath = "$groupPath/$publishArtifactId/$effectiveVersion/"
+    val dest = layout.projectDirectory.dir("target/staging-deploy/$mavenPath")
+    into(dest)
 
+    // 1) AAR -> velocityexchangeverifiers-<effectiveVersion>.aar
     from(layout.buildDirectory.dir("outputs/aar")) {
-        include("**/*.aar")
+        include("*.aar")
+        rename { "$publishArtifactId-$effectiveVersion.aar" }
+        includeEmptyDirs = false
     }
+
+    // 2) Sources and Javadoc jars
+    // We rename whatever is produced to the exact names Central expects
     from(layout.buildDirectory.dir("libs")) {
-        include("**/*.jar")
+        include("**/*sources*.jar", "**/*javadoc*.jar")
+        exclude("**/*-metadata.jar*", "**/*-kotlin-tooling-metadata.jar")
+        rename { name ->
+            when {
+                name.contains("sources") -> "$publishArtifactId-$effectiveVersion-sources.jar"
+                name.contains("javadoc") -> "$publishArtifactId-$effectiveVersion-javadoc.jar"
+                else -> name
+            }
+        }
+        includeEmptyDirs = false
     }
-    into(layout.projectDirectory.dir("target/staging-deploy/$mavenPath"))
 }
