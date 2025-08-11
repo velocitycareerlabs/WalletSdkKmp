@@ -305,14 +305,14 @@ tasks.register<Sync>("stageArtifacts") {
     val dest = layout.projectDirectory.dir("target/staging-deploy/$mavenPath")
     into(dest)
 
-    // 1) AAR -> velocityexchangeverifiers-<effectiveVersion>.aar
+    // AAR -> velocityexchangeverifiers-<effectiveVersion>.aar
     from(layout.buildDirectory.dir("outputs/aar")) {
         include("*.aar")
         rename { "$publishArtifactId-$effectiveVersion.aar" }
         includeEmptyDirs = false
     }
 
-    // 2) Sources and Javadoc jars
+    // Sources and Javadoc jars
     // We rename whatever is produced to the exact names Central expects
     from(layout.buildDirectory.dir("libs")) {
         include("**/*sources*.jar", "**/*javadoc*.jar")
