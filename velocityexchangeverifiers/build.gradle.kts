@@ -299,7 +299,7 @@ tasks.register("verifyExpectedArtifactsExist") {
 }
 
 // Stage for JReleaser (Android only, Maven friendly names)
-tasks.register<Copy>("stageArtifacts") {
+tasks.register<Sync>("stageArtifacts") {
     val groupPath = publishGroupId.replace('.', '/')
     val mavenPath = "$groupPath/$publishArtifactId/$effectiveVersion/"
     val dest = layout.projectDirectory.dir("target/staging-deploy/$mavenPath")
