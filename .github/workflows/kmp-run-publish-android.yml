@@ -52,7 +52,7 @@ jobs:
       - name: 🧪 Build AAR + Sources + Javadoc
         run: |
           ./gradlew clean \
-            :velocityexchangeverifiers:assemble \
+            :velocityexchangeverifiers:assembleAndroid \
             -PprojectVersion=${RELEASE_VERSION} \
             -Pprerelease=${{ github.event.inputs.environment == 'rc' }} \
             --stacktrace

@@ -25,6 +25,11 @@ extra["publishGroupId"] = publishGroupId
 
 apply(from = "android-publish.gradle.kts")
 
+// TODO: For future optimization of building only the targets that are needed
+// val targetJs = providers.gradleProperty("targetJs").isPresent
+// val targetIos = providers.gradleProperty("targetIos").isPresent
+// val targetAndroid = providers.gradleProperty("targetAndroid").isPresent
+
 kotlin {
     jvmToolchain(17)
 
@@ -220,6 +225,41 @@ tasks.register<Jar>("androidDokkaJavadocJar") {
     archiveClassifier.set("javadoc")
     dependsOn(tasks.named("dokkaHtml"))
     from(layout.buildDirectory.dir("dokka/html"))
+}
+
+tasks.register("assembleAndroid") {
+    group = "build"
+    dependsOn(
+        tasks.named("assemble"),
+        tasks.named("androidDokkaJavadocJar"),
+    )
+}
+
+tasks.register("assembleIos") {
+    group = "build"
+    dependsOn(
+        tasks.named("assemble"),
+        tasks.named("assembleXCFramework"),
+    )
+}
+
+tasks.register("assembleJs") {
+    group = "build"
+    dependsOn(
+        rootProject.tasks.named("kotlinUpgradeYarnLock"),
+        tasks.named("jsNodeProductionLibraryDistribution"),
+    )
+}
+
+tasks.register("assembleAllTargets") {
+    group = "build"
+    dependsOn(
+        rootProject.tasks.named("kotlinUpgradeYarnLock"),
+        tasks.named("assemble"),
+        tasks.named("androidDokkaJavadocJar"),
+        tasks.matching { it.name == "assembleXCFramework" },
+        tasks.matching { it.name == "jsNodeProductionLibraryDistribution" },
+    )
 }
 
 // Aggregate build helper
