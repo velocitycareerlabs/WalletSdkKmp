@@ -16,8 +16,13 @@ val publishGroupId = providers.gradleProperty("PUBLISH_GROUP_ID").get()
 val publishArtifactId = providers.gradleProperty("PUBLISH_ARTIFACT_ID").get()
 val publishVersion = providers.gradleProperty("PUBLISH_VERSION").get()
 
-val cliProjectVersion= providers.gradleProperty("projectVersion").orNull
-val isPrerelease = providers.gradleProperty("prerelease").map { it.toBoolean() }.orElse(false).get()
+val cliProjectVersion = providers.gradleProperty("projectVersion").orNull
+val isPrerelease =
+    providers
+        .gradleProperty("prerelease")
+        .map { it.toBoolean() }
+        .orElse(false)
+        .get()
 
 val effectiveBase = cliProjectVersion ?: publishVersion
 val effectiveVersion = if (isPrerelease) "$effectiveBase-rc" else effectiveBase

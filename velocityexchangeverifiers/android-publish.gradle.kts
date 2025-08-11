@@ -5,8 +5,9 @@ val publishArtifactId: String by project
 val publishGroupId: String by project
 val publishVersion: String by project
 
-val effectiveVersion: String = (project.extra["effectiveVersion"] as? String)
-    ?: publishVersion
+val effectiveVersion: String =
+    (project.extra["effectiveVersion"] as? String)
+        ?: publishVersion
 
 afterEvaluate {
     // Use assemble; RC vs Release is only the version string
