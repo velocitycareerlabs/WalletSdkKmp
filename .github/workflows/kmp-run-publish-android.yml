@@ -17,7 +17,7 @@ permissions:
   packages: write
 
 concurrency:
-  group: kmp-android-publish-${{ github.ref }}
+  group: kmp-android-publish-${{ github.ref }}-${{ github.event.inputs.environment }}
   cancel-in-progress: true
 
 jobs:
@@ -84,7 +84,10 @@ jobs:
             --stacktrace
 
       - name: ✅ Verify expected artifacts exist
-        run: ./gradlew --no-daemon :velocityexchangeverifiers:verifyExpectedArtifactsExist
+        run: |
+          ./gradlew --no-daemon :velocityexchangeverifiers:verifyExpectedArtifactsExist \
+            -PprojectVersion=${RELEASE_VERSION} \
+            -Pprerelease=${{ github.event.inputs.environment == 'rc' }}
 
       - name: 🧹 Clean staging root
         shell: bash
@@ -94,7 +97,10 @@ jobs:
           mkdir -p velocityexchangeverifiers/target/staging-deploy/io/velocitycareerlabs/velocityexchangeverifiers
 
       - name: 📦 Stage Artifacts
-        run: ./gradlew --no-daemon :velocityexchangeverifiers:stageArtifacts
+        run: |
+          ./gradlew --no-daemon :velocityexchangeverifiers:stageArtifacts \
+            -PprojectVersion=${RELEASE_VERSION} \
+            -Pprerelease=${{ github.event.inputs.environment == 'rc' }}
 
       - name: 🧪 Generate POM File
         shell: bash
