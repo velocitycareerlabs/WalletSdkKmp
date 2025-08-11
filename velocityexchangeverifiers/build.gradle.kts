@@ -293,6 +293,33 @@ tasks.register("verifyExpectedArtifactsExist") {
     }
 }
 
+// Helper: ensure we have a sourcesJar task and capture its name
+val sourcesJarTaskName: String by lazy {
+    val existing =
+        listOf(
+            "androidSourcesJar",
+            "androidReleaseSourcesJar",
+            "sourcesJar",
+        ).firstOrNull { tasks.findByName(it) != null }
+
+    if (existing != null) {
+        existing
+    } else {
+        // Fallback: create a minimal sources jar from android/common sources
+        val t =
+            tasks.register<Jar>("androidSourcesJar") {
+                archiveClassifier.set("sources")
+                // KMP typical locations
+                from("src/androidMain/kotlin")
+                from("src/androidMain/java")
+                from("src/commonMain/kotlin")
+                // Don’t fail if folders are missing
+                includeEmptyDirs = false
+            }
+        t.name
+    }
+}
+
 // Clean the whole artifact root once per run (CI does this before staging)
 tasks.register<Delete>("cleanStagingRoot") {
     delete(layout.projectDirectory.dir("target/staging-deploy/io/velocitycareerlabs/velocityexchangeverifiers"))
@@ -304,6 +331,7 @@ tasks.register<Sync>("stageArtifacts") {
         "cleanStagingRoot",
         "assembleAndroid",
         "androidDokkaJavadocJar",
+        sourcesJarTaskName,
     )
     val groupPath = publishGroupId.replace('.', '/')
     val mavenPath = "$groupPath/$publishArtifactId/$effectiveVersion/"
