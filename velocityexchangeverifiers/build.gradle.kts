@@ -30,9 +30,9 @@ val effectiveVersion = if (isPrerelease) "$effectiveBase-rc" else effectiveBase
 group = publishGroupId
 version = publishVersion
 
-extra["publishVersion"] = publishVersion
-extra["publishArtifactId"] = publishArtifactId
 extra["publishGroupId"] = publishGroupId
+extra["publishArtifactId"] = publishArtifactId
+extra["publishVersion"] = publishVersion
 extra["effectiveVersion"] = effectiveVersion
 
 apply(from = "android-publish.gradle.kts")
@@ -232,7 +232,6 @@ tasks.withType<DokkaTask>().configureEach {
 // Build a real javadoc jar from Dokka HTML output
 tasks.register<Jar>("androidDokkaJavadocJar") {
     group = JavaBasePlugin.DOCUMENTATION_GROUP
-    description = "Assembles Dokka HTML into a javadoc-classified jar for Maven Central"
     archiveClassifier.set("javadoc")
     dependsOn(tasks.named("dokkaHtml"))
     from(layout.buildDirectory.dir("dokka/html"))
@@ -276,34 +275,36 @@ tasks.register("assembleAllTargets") {
 // Aggregate build helper
 tasks.register("verifyExpectedArtifactsExist") {
     group = "verification"
-    description = "Prints the contents of key artifact directories"
-
     doLast {
-        fun printDirContents(
+        fun printDir(
             title: String,
             dirPath: String,
         ) {
-            println("📂 $title: Contents of $dirPath/")
-            val dir = file(dirPath)
-            if (dir.exists() && dir.isDirectory) {
-                dir.listFiles()?.forEach { println(" - ${it.name}") }
+            println("📂 $title: $dirPath")
+            val d = file(dirPath)
+            if (d.exists() && d.isDirectory) {
+                d.listFiles()?.forEach { println(" - ${it.name}") }
             } else {
-                println("❌ Directory does not exist: $dirPath")
+                println("❌ Missing: $dirPath")
             }
         }
-
-        printDirContents("AAR", "build/outputs/aar")
-        printDirContents("LIBS", "build/libs")
+        printDir("AAR", "build/outputs/aar")
+        printDir("LIBS", "build/libs")
     }
 }
 
-tasks.register<Delete>("cleanStaging") {
+// Clean the whole artifact root once per run (CI does this before staging)
+tasks.register<Delete>("cleanStagingRoot") {
     delete(layout.projectDirectory.dir("target/staging-deploy/io/velocitycareerlabs/velocityexchangeverifiers"))
 }
 
-// Stage for JReleaser (Android only, Maven friendly names)
+// Stage only the current EFFECTIVE version directory
 tasks.register<Sync>("stageArtifacts") {
-    dependsOn("cleanStaging")
+    dependsOn(
+        "cleanStagingRoot",
+        "assembleAndroid",
+        "androidDokkaJavadocJar",
+    )
     val groupPath = publishGroupId.replace('.', '/')
     val mavenPath = "$groupPath/$publishArtifactId/$effectiveVersion/"
     into(layout.projectDirectory.dir("target/staging-deploy/$mavenPath"))

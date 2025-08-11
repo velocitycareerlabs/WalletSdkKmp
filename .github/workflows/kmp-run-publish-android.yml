@@ -16,6 +16,10 @@ permissions:
   contents: write
   packages: write
 
+concurrency:
+  group: kmp-android-publish-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   release-android-sdk:
     runs-on: macos-15
@@ -24,7 +28,7 @@ jobs:
       - name: 🧾 Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0   # get tags for releases
+          fetch-depth: 0
 
       - name: ☕ Set up Java
         uses: actions/setup-java@v4
@@ -72,11 +76,12 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          ./gradlew --no-daemon :velocityexchangeverifiers:clean \
-                                   :velocityexchangeverifiers:assembleAndroid \
-                                   -PprojectVersion=${RELEASE_VERSION} \
-                                   -Pprerelease=${{ github.event.inputs.environment == 'rc' }} \
-                                   --stacktrace
+          ./gradlew --no-daemon --warning-mode=all \
+            :velocityexchangeverifiers:clean \
+            :velocityexchangeverifiers:assembleAndroid \
+            -PprojectVersion=${RELEASE_VERSION} \
+            -Pprerelease=${{ github.event.inputs.environment == 'rc' }} \
+            --stacktrace
 
       - name: ✅ Verify expected artifacts exist
         run: ./gradlew --no-daemon :velocityexchangeverifiers:verifyExpectedArtifactsExist
