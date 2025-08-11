@@ -156,10 +156,35 @@ jobs:
         run: |
           set -euo pipefail
           dir=velocityexchangeverifiers/target/staging-deploy/io/velocitycareerlabs/velocityexchangeverifiers/${EFFECTIVE_VERSION}
-          test -f "$dir/velocityexchangeverifiers-${EFFECTIVE_VERSION}.pom"
-          test -f "$dir/velocityexchangeverifiers-${EFFECTIVE_VERSION}.aar"
-          test -f "$dir/velocityexchangeverifiers-${EFFECTIVE_VERSION}-sources.jar"
-          test -f "$dir/velocityexchangeverifiers-${EFFECTIVE_VERSION}-javadoc.jar"
+          echo "📂 Validating contents of: $dir"
+          ls -l "$dir" || true
+          
+          missing=0
+          check() {
+            local f="$1"
+            if [[ -f "$dir/$f" ]]; then
+              echo "✅ Found $f"
+            else
+              echo "❌ Missing $f"
+              missing=1
+            fi
+          }
+          
+          check "velocityexchangeverifiers-${EFFECTIVE_VERSION}.pom"
+          check "velocityexchangeverifiers-${EFFECTIVE_VERSION}.aar"
+          check "velocityexchangeverifiers-${EFFECTIVE_VERSION}-sources.jar"
+          check "velocityexchangeverifiers-${EFFECTIVE_VERSION}-javadoc.jar"
+          
+          # Print a quick hint if jars are missing
+          if [[ $missing -ne 0 ]]; then
+            echo "🔎 Debugging hints:"
+            echo "→ Check Gradle outputs:"
+            echo "  • build/libs:"
+            ls -l velocityexchangeverifiers/build/libs || true
+            echo "  • build/outputs/aar:"
+            ls -l velocityexchangeverifiers/build/outputs/aar || true
+            exit 1
+          fi
 
       - name: 🚀 Run JReleaser full-release
         uses: jreleaser/release-action@v2
