@@ -34,17 +34,12 @@ subprojects {
                 }
             }
 
-            // Hook ktlint into the normal `check` lifecycle
-            tasks.matching { it.name == "check" }.configureEach {
-                dependsOn("ktlintCheck")
+            tasks.register("cleanKtlintCheck") {
+                dependsOn("clean", "ktlintCheck")
             }
 
-            tasks.register("cleanCheck") {
-                dependsOn("cleanKtlintCheck", "ktlintCheck")
-            }
-
-            tasks.register("cleanFormat") {
-                dependsOn("cleanKtlintCheck", "ktlintFormat")
+            tasks.register("cleanKtlintFormat") {
+                dependsOn("clean", "ktlintFormat")
             }
         }
     }
