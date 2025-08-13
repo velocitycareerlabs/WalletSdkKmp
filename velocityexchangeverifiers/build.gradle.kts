@@ -160,7 +160,7 @@ kotlin {
     }
 
     cocoapods {
-        version = publishVersion
+        version = effectiveVersion
         summary = "KMP SDK for credential verification"
         homepage = "https://github.com/velocitycareerlabs"
         ios.deploymentTarget = "13.0"

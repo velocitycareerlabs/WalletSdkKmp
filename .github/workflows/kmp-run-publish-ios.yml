@@ -1,0 +1,183 @@
+name: KMP RUN Publish iOS
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Configuration environment'
+        required: true
+        type: choice
+        options: [rc, prod]
+
+env:
+  JAVA_VERSION: "17"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: kmp-ios-publish-${{ github.ref }}-${{ github.event.inputs.environment }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-publish-ios-sdk:
+    runs-on: macos-15
+    env:
+      XC_VERSION: "16.3"
+      FRAMEWORKS_REPO: velocitycareerlabs/KmpIosFrameworks   # <— renamed
+      PAT_TOKEN: ${{ secrets.VCL_RW_ACCESS_TOKEN }}
+    steps:
+      - name: 🧾 Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_${{ env.XC_VERSION }}.app
+
+      - name: ☕ Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: 🛠️ Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      - name: Print tool versions
+        run: |
+          java -version
+          ./gradlew --version
+          pod --version
+
+      - name: 📝 Read base version from gradle.properties
+        id: ver
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION=$(grep '^PUBLISH_VERSION=' gradle.properties | cut -d'=' -f2 | tr -d '[:space:]')
+          if [ -z "$VERSION" ]; then echo "PUBLISH_VERSION missing in gradle.properties"; exit 1; fi
+          echo "base_version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Found base version: $VERSION"
+
+      - name: 🔧 Compute EFFECTIVE_VERSION
+        id: eff
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE="${{ steps.ver.outputs.base_version }}"
+          if [ "${{ github.event.inputs.environment }}" = "rc" ]; then
+            EFFECTIVE="${BASE}-rc"; PRERELEASE=true
+          else
+            EFFECTIVE="${BASE}"; PRERELEASE=false
+          fi
+          echo "effective=$EFFECTIVE" >> "$GITHUB_OUTPUT"
+          echo "EFFECTIVE_VERSION=$EFFECTIVE" >> "$GITHUB_ENV"
+          echo "IS_PRERELEASE=$PRERELEASE" >> "$GITHUB_ENV"
+          echo "Effective version: $EFFECTIVE (prerelease=$PRERELEASE)"
+
+      - name: 🏗️ Build XCFramework via KMP
+        shell: bash
+        run: |
+          set -euo pipefail
+          ./gradlew --no-daemon --warning-mode=all \
+            :velocityexchangeverifiers:clean \
+            :velocityexchangeverifiers:assembleIos \
+            -PprojectVersion=${{ steps.ver.outputs.base_version }} \
+            -Pprerelease=${{ github.event.inputs.environment == 'rc' }} \
+            --stacktrace
+
+      - name: 🧾 Generate podspec via KMP
+        shell: bash
+        run: |
+          set -euo pipefail
+          ./gradlew --no-daemon :velocityexchangeverifiers:podspec \
+            -PprojectVersion=${{ steps.ver.outputs.base_version }} \
+            -Pprerelease=${{ github.event.inputs.environment == 'rc' }}
+
+      - name: 🔎 Locate outputs & validate podspec version
+        id: locate
+        shell: bash
+        run: |
+          set -euo pipefail
+          XCF="velocityexchangeverifiers/build/XCFrameworks/release/velocityexchangeverifiers.xcframework"
+          PODSPEC="velocityexchangeverifiers/build/cocoapods/publish/velocityexchangeverifiers.podspec"
+          test -d "$XCF" || { echo "XCFramework not found: $XCF"; exit 1; }
+          test -f "$PODSPEC" || { echo "Podspec not found: $PODSPEC"; exit 1; }
+          echo "xcframework=$XCF" >> "$GITHUB_OUTPUT"
+          echo "podspec=$PODSPEC" >> "$GITHUB_OUTPUT"
+          grep -E "spec\.version.+['\"]${{ env.EFFECTIVE_VERSION }}['\"]" "$PODSPEC" || {
+            echo "❌ Podspec version mismatch (expected ${{ env.EFFECTIVE_VERSION }})"; exit 1; }
+          echo "✅ Podspec version OK"
+
+      - name: 📦 Zip XCFramework
+        id: zipit
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT="velocityexchangeverifiers-${{ env.EFFECTIVE_VERSION }}.xcframework.zip"
+          ditto -c -k --sequesterRsrc --keepParent "${{ steps.locate.outputs.xcframework }}" "$OUT"
+          echo "zip=$OUT" >> "$GITHUB_OUTPUT"
+          ls -lh "$OUT"
+
+      - name: 🔑 Git identity
+        shell: bash
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+
+      - name: ⬇️ Clone Frameworks repo
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone https://${{ env.PAT_TOKEN }}@github.com/${{ env.FRAMEWORKS_REPO }} frameworks-repo
+
+      - name: 🗂️ Place artifacts into Frameworks repo and commit
+        working-directory: frameworks-repo
+        shell: bash
+        run: |
+          set -euo pipefail
+          VER="${{ env.EFFECTIVE_VERSION }}"
+          # 2) Put the binary here:
+          DEST_DIR="VelocityExchangeVerifiers/${VER}"
+          mkdir -p "$DEST_DIR"
+          cp "../${{ steps.zipit.outputs.zip }}" "$DEST_DIR/"
+          git add "$DEST_DIR"
+          git commit -m "VelocityExchangeVerifiers ${VER} (xcframework zip)"
+          git push
+
+      - name: 🧩 Create/update Specs folder inside Frameworks repo and commit
+        working-directory: frameworks-repo
+        shell: bash
+        run: |
+          set -euo pipefail
+          VER="${{ env.EFFECTIVE_VERSION }}"
+          # 3) Put the podspec here (inside the same repo under KmpIosSpecs):
+          SPECS_DIR="KmpIosSpecs/velocityexchangeverifiers/${VER}"
+          mkdir -p "$SPECS_DIR"
+          cp "../${{ steps.locate.outputs.podspec }}" "$SPECS_DIR/velocityexchangeverifiers.podspec"
+
+          # Point podspec to the committed zip in this repo
+          # Use raw URL for CocoaPods :http download
+          ZIP_URL="https://raw.githubusercontent.com/${{ env.FRAMEWORKS_REPO }}/main/VelocityExchangeVerifiers/${VER}/velocityexchangeverifiers-${VER}.xcframework.zip"
+
+          # Replace s.source
+          perl -0777 -pe "s/(^|\\n)\\s*(s|spec)\\.source\\s*=\\s*\\{[^}]*\\}/\\n  s.source = { :http => '${ZIP_URL}' }/s" -i "$SPECS_DIR/velocityexchangeverifiers.podspec"
+
+          # Ensure vendored_frameworks line is correct
+          perl -0777 -pe "s/(^|\\n)\\s*(s|spec)\\.vendored_frameworks\\s*=\\s*['\"][^'\"]+['\"]/\\n  s.vendored_frameworks = 'velocityexchangeverifiers.xcframework'/s" -i "$SPECS_DIR/velocityexchangeverifiers.podspec"
+
+          git add "$SPECS_DIR"
+          git commit -m "Specs velocityexchangeverifiers ${VER}"
+          git push
+
+      - name: ⬆️ Upload artifacts (debug)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-${{ env.EFFECTIVE_VERSION }}
+          path: |
+            ${{ steps.zipit.outputs.zip }}

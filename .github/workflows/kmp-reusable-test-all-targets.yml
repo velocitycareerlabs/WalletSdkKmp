@@ -35,7 +35,7 @@ jobs:
             ${{ runner.os }}-gradle-
 
       - name: Lint (ktlint)
-        run: ./gradlew ktlintCheck
+        run: ./gradlew cleanKtlintCheck
 
       - name: Clean build
         run: ./gradlew clean
