@@ -105,28 +105,36 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          
           # XCFramework (release)
           XCF="velocityexchangeverifiers/build/XCFrameworks/release/velocityexchangeverifiers.xcframework"
           test -d "$XCF" || { echo "XCFramework not found: $XCF"; exit 1; }
-
-          # Find the generated podspec anywhere under the module's build
-          PODSPEC=$(find velocityexchangeverifiers/build -maxdepth 6 -type f -name "*.podspec" | head -n1 || true)
-          if [[ -z "${PODSPEC}" ]]; then
-            echo "Podspec not found under velocityexchangeverifiers/build. Tree (trimmed):"
-            find velocityexchangeverifiers/build -maxdepth 4 -print
+          
+          # Try module-root podspec first (typical for KMP Cocoapods plugin)
+          ROOT_PODSPEC="velocityexchangeverifiers/velocityexchangeverifiers.podspec"
+          if [[ -f "$ROOT_PODSPEC" ]]; then
+            PODSPEC="$ROOT_PODSPEC"
+          else
+            # Fallback: look under build/ (some setups place it there)
+            PODSPEC=$(find velocityexchangeverifiers/build -maxdepth 6 -type f -name "*.podspec" | head -n1 || true)
+          fi
+          
+          if [[ -z "${PODSPEC:-}" || ! -f "$PODSPEC" ]]; then
+            echo "Podspec not found in module root or under build/. Tree (trimmed):"
+            find velocityexchangeverifiers -maxdepth 4 -print
             exit 1
           fi
-
+          
           echo "Found podspec at: $PODSPEC"
           echo "xcframework=$XCF" >> "$GITHUB_OUTPUT"
           echo "podspec=$PODSPEC" >> "$GITHUB_OUTPUT"
-
-          # Validate version in podspec equals EFFECTIVE_VERSION
-          grep -E "spec\.version.+['\"]${{ env.EFFECTIVE_VERSION }}['\"]" "$PODSPEC" || {
-            echo "❌ Podspec version mismatch (expected ${{ env.EFFECTIVE_VERSION }})"
+          
+          # Validate version matches EFFECTIVE_VERSION (already set by Gradle)
+          if ! grep -E "spec\.version\s*=\s*['\"]${EFFECTIVE_VERSION}['\"]" "$PODSPEC" >/dev/null; then
+            echo "❌ Podspec version mismatch (expected ${EFFECTIVE_VERSION})"
             sed -n '1,160p' "$PODSPEC"
             exit 1
-          }
+          fi
           echo "✅ Podspec version OK"
 
       - name: 📦 Zip XCFramework
