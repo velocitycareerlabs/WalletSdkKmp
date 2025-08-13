@@ -27,6 +27,7 @@ jobs:
       XC_VERSION: "16.3"
       FRAMEWORKS_REPO: velocitycareerlabs/KmpIosFrameworks
       PAT_TOKEN: ${{ secrets.VCL_RW_ACCESS_TOKEN }}
+
     steps:
       - name: 🧾 Checkout
         uses: actions/checkout@v4
@@ -105,13 +106,24 @@ jobs:
         run: |
           set -euo pipefail
           XCF="velocityexchangeverifiers/build/XCFrameworks/release/velocityexchangeverifiers.xcframework"
-          PODSPEC="velocityexchangeverifiers/build/cocoapods/publish/velocityexchangeverifiers.podspec"
           test -d "$XCF" || { echo "XCFramework not found: $XCF"; exit 1; }
-          test -f "$PODSPEC" || { echo "Podspec not found: $PODSPEC"; exit 1; }
+
+          PODSPEC=$(find velocityexchangeverifiers/build -maxdepth 5 -type f -name "*.podspec" | head -n1 || true)
+          if [[ -z "${PODSPEC}" ]]; then
+            echo "Podspec not found under velocityexchangeverifiers/build. Listing for debug:"
+            find velocityexchangeverifiers/build -maxdepth 5 -print
+            exit 1
+          fi
+
+          echo "Found podspec at: $PODSPEC"
           echo "xcframework=$XCF" >> "$GITHUB_OUTPUT"
           echo "podspec=$PODSPEC" >> "$GITHUB_OUTPUT"
+
           grep -E "spec\.version.+['\"]${{ env.EFFECTIVE_VERSION }}['\"]" "$PODSPEC" || {
-            echo "❌ Podspec version mismatch (expected ${{ env.EFFECTIVE_VERSION }})"; exit 1; }
+            echo "❌ Podspec version mismatch (expected ${{ env.EFFECTIVE_VERSION }})"
+            sed -n '1,160p' "$PODSPEC"
+            exit 1
+          }
           echo "✅ Podspec version OK"
 
       - name: 📦 Zip XCFramework
@@ -123,6 +135,16 @@ jobs:
           ditto -c -k --sequesterRsrc --keepParent "${{ steps.locate.outputs.xcframework }}" "$OUT"
           echo "zip=$OUT" >> "$GITHUB_OUTPUT"
           ls -lh "$OUT"
+
+      - name: 🔍 Sanity check zip contents
+        shell: bash
+        run: |
+          set -euo pipefail
+          ZIP="${{ steps.zipit.outputs.zip }}"
+          unzip -l "$ZIP" | sed -n '1,40p'
+          unzip -l "$ZIP" | grep -q "velocityexchangeverifiers\.xcframework/" || {
+            echo "❌ zip does not contain velocityexchangeverifiers.xcframework at the expected path"; exit 1; }
+          echo "✅ zip contents OK"
 
       - name: 🔑 Git identity
         shell: bash
@@ -142,12 +164,12 @@ jobs:
         run: |
           set -euo pipefail
           VER="${{ env.EFFECTIVE_VERSION }}"
-          # 2) Put the binary here:
           DEST_DIR="VelocityExchangeVerifiers/${VER}"
           mkdir -p "$DEST_DIR"
-          cp "../${{ steps.zipit.outputs.zip }}" "$DEST_DIR/"
-          git add "$DEST_DIR"
-          git commit -m "VelocityExchangeVerifiers ${VER} (xcframework zip)"
+          cp -f "../${{ steps.zipit.outputs.zip }}" "$DEST_DIR/"
+          git add -A
+          git diff --cached --quiet && echo "No changes to commit" || git commit -m "VelocityExchangeVerifiers ${VER} (xcframework zip)"
+          git pull --rebase || true
           git push
 
       - name: 🧩 Create/update Specs folder inside Frameworks repo and commit
@@ -156,23 +178,22 @@ jobs:
         run: |
           set -euo pipefail
           VER="${{ env.EFFECTIVE_VERSION }}"
-          # 3) Put the podspec here (inside the same repo under KmpIosSpecs):
-          SPECS_DIR="KmpIosSpecs/velocityexchangeverifiers/${VER}"
+          SPECS_DIR="KmpIosSpecs/VelocityExchangeVerifiers/${VER}"
           mkdir -p "$SPECS_DIR"
-          cp "../${{ steps.locate.outputs.podspec }}" "$SPECS_DIR/velocityexchangeverifiers.podspec"
 
-          # Point podspec to the committed zip in this repo
-          # Use raw URL for CocoaPods :http download
+          cp -f "../${{ steps.locate.outputs.podspec }}" "$SPECS_DIR/VelocityExchangeVerifiers.podspec"
+          PODSPEC="$SPECS_DIR/VelocityExchangeVerifiers.podspec"
+
+          # Normalize fields in the podspec
+          perl -0777 -pe "s/(^|\\n)\\s*(s|spec)\\.name\\s*=\\s*['\"][^'\"]+['\"]/\\n  s.name = 'VelocityExchangeVerifiers'/s" -i "$PODSPEC"
           ZIP_URL="https://raw.githubusercontent.com/${{ env.FRAMEWORKS_REPO }}/main/VelocityExchangeVerifiers/${VER}/velocityexchangeverifiers-${VER}.xcframework.zip"
+          perl -0777 -pe "s/(^|\\n)\\s*(s|spec)\\.source\\s*=\\s*\\{[^}]*\\}/\\n  s.source = { :http => '${ZIP_URL}' }/s" -i "$PODSPEC"
+          perl -0777 -pe "s/(^|\\n)\\s*(s|spec)\\.vendored_frameworks\\s*=\\s*['\"][^'\"]+['\"]/\\n  s.vendored_frameworks = 'velocityexchangeverifiers.xcframework'/s" -i "$PODSPEC"
+          perl -0777 -pe "s/(^|\\n)\\s*(s|spec)\\.version\\s*=\\s*['\"][^'\"]+['\"]/\\n  s.version = '${VER}'/s" -i "$PODSPEC"
 
-          # Replace s.source
-          perl -0777 -pe "s/(^|\\n)\\s*(s|spec)\\.source\\s*=\\s*\\{[^}]*\\}/\\n  s.source = { :http => '${ZIP_URL}' }/s" -i "$SPECS_DIR/velocityexchangeverifiers.podspec"
-
-          # Ensure vendored_frameworks line is correct
-          perl -0777 -pe "s/(^|\\n)\\s*(s|spec)\\.vendored_frameworks\\s*=\\s*['\"][^'\"]+['\"]/\\n  s.vendored_frameworks = 'velocityexchangeverifiers.xcframework'/s" -i "$SPECS_DIR/velocityexchangeverifiers.podspec"
-
-          git add "$SPECS_DIR"
-          git commit -m "Specs velocityexchangeverifiers ${VER}"
+          git add -A
+          git diff --cached --quiet && echo "No changes to commit" || git commit -m "Specs VelocityExchangeVerifiers ${VER}"
+          git pull --rebase || true
           git push
 
       - name: ⬆️ Upload artifacts (debug)
