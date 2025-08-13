@@ -53,7 +53,7 @@ jobs:
         run: |
           java -version
           ./gradlew --version
-          pod --version
+          pod --version || true
 
       - name: 📝 Read base version from gradle.properties
         id: ver
@@ -105,13 +105,15 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          # XCFramework (release)
           XCF="velocityexchangeverifiers/build/XCFrameworks/release/velocityexchangeverifiers.xcframework"
           test -d "$XCF" || { echo "XCFramework not found: $XCF"; exit 1; }
 
-          PODSPEC=$(find velocityexchangeverifiers/build -maxdepth 5 -type f -name "*.podspec" | head -n1 || true)
+          # Find the generated podspec anywhere under the module's build
+          PODSPEC=$(find velocityexchangeverifiers/build -maxdepth 6 -type f -name "*.podspec" | head -n1 || true)
           if [[ -z "${PODSPEC}" ]]; then
-            echo "Podspec not found under velocityexchangeverifiers/build. Listing for debug:"
-            find velocityexchangeverifiers/build -maxdepth 5 -print
+            echo "Podspec not found under velocityexchangeverifiers/build. Tree (trimmed):"
+            find velocityexchangeverifiers/build -maxdepth 4 -print
             exit 1
           fi
 
@@ -119,6 +121,7 @@ jobs:
           echo "xcframework=$XCF" >> "$GITHUB_OUTPUT"
           echo "podspec=$PODSPEC" >> "$GITHUB_OUTPUT"
 
+          # Validate version in podspec equals EFFECTIVE_VERSION
           grep -E "spec\.version.+['\"]${{ env.EFFECTIVE_VERSION }}['\"]" "$PODSPEC" || {
             echo "❌ Podspec version mismatch (expected ${{ env.EFFECTIVE_VERSION }})"
             sed -n '1,160p' "$PODSPEC"
@@ -141,7 +144,7 @@ jobs:
         run: |
           set -euo pipefail
           ZIP="${{ steps.zipit.outputs.zip }}"
-          unzip -l "$ZIP" | sed -n '1,40p'
+          unzip -l "$ZIP" | sed -n '1,60p'
           unzip -l "$ZIP" | grep -q "velocityexchangeverifiers\.xcframework/" || {
             echo "❌ zip does not contain velocityexchangeverifiers.xcframework at the expected path"; exit 1; }
           echo "✅ zip contents OK"
@@ -158,7 +161,7 @@ jobs:
           set -euo pipefail
           git clone https://${{ env.PAT_TOKEN }}@github.com/${{ env.FRAMEWORKS_REPO }} frameworks-repo
 
-      - name: 🗂️ Place artifacts into Frameworks repo and commit
+      - name: 🗂️ Place artifacts into Frameworks repo and commit (binary)
         working-directory: frameworks-repo
         shell: bash
         run: |
@@ -168,11 +171,11 @@ jobs:
           mkdir -p "$DEST_DIR"
           cp -f "../${{ steps.zipit.outputs.zip }}" "$DEST_DIR/"
           git add -A
-          git diff --cached --quiet && echo "No changes to commit" || git commit -m "VelocityExchangeVerifiers ${VER} (xcframework zip)"
+          git diff --cached --quiet && echo "No binary changes to commit" || git commit -m "VelocityExchangeVerifiers ${VER} (xcframework zip)"
           git pull --rebase || true
           git push
 
-      - name: 🧩 Create/update Specs folder inside Frameworks repo and commit
+      - name: 🧩 Create/update Specs folder inside Frameworks repo and commit (podspec)
         working-directory: frameworks-repo
         shell: bash
         run: |
@@ -184,15 +187,16 @@ jobs:
           cp -f "../${{ steps.locate.outputs.podspec }}" "$SPECS_DIR/VelocityExchangeVerifiers.podspec"
           PODSPEC="$SPECS_DIR/VelocityExchangeVerifiers.podspec"
 
-          # Normalize fields in the podspec
+          # Normalize required fields
           perl -0777 -pe "s/(^|\\n)\\s*(s|spec)\\.name\\s*=\\s*['\"][^'\"]+['\"]/\\n  s.name = 'VelocityExchangeVerifiers'/s" -i "$PODSPEC"
+
           ZIP_URL="https://raw.githubusercontent.com/${{ env.FRAMEWORKS_REPO }}/main/VelocityExchangeVerifiers/${VER}/velocityexchangeverifiers-${VER}.xcframework.zip"
           perl -0777 -pe "s/(^|\\n)\\s*(s|spec)\\.source\\s*=\\s*\\{[^}]*\\}/\\n  s.source = { :http => '${ZIP_URL}' }/s" -i "$PODSPEC"
           perl -0777 -pe "s/(^|\\n)\\s*(s|spec)\\.vendored_frameworks\\s*=\\s*['\"][^'\"]+['\"]/\\n  s.vendored_frameworks = 'velocityexchangeverifiers.xcframework'/s" -i "$PODSPEC"
           perl -0777 -pe "s/(^|\\n)\\s*(s|spec)\\.version\\s*=\\s*['\"][^'\"]+['\"]/\\n  s.version = '${VER}'/s" -i "$PODSPEC"
 
           git add -A
-          git diff --cached --quiet && echo "No changes to commit" || git commit -m "Specs VelocityExchangeVerifiers ${VER}"
+          git diff --cached --quiet && echo "No spec changes to commit" || git commit -m "Specs VelocityExchangeVerifiers ${VER}"
           git pull --rebase || true
           git push
 
