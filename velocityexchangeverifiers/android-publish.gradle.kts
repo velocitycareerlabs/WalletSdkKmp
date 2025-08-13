@@ -5,14 +5,19 @@ val publishArtifactId: String by project
 val publishGroupId: String by project
 val publishVersion: String by project
 
+// Provided by build.gradle.kts
+val effectiveVersion: String =
+    (project.extra["effectiveVersion"] as? String) ?: publishVersion
+
 afterEvaluate {
-    // Use assemble; RC vs Release is only the version string
+    // Build the AAR with standard assemble; release vs rc is only the version string
     val aarTaskName = "assemble"
 
+    // New Android KMP DSL: <module>.aar
     val aarRelPath = "outputs/aar/${project.name}.aar"
-
     val aarFile = layout.buildDirectory.file(aarRelPath)
 
+    // Sources jar task name
     val sourcesJarTaskName =
         listOf(
             "sourcesJar",
@@ -23,11 +28,11 @@ afterEvaluate {
 
     extensions.configure<PublishingExtension>("publishing") {
         publications {
-            // ---- RELEASE ----
+            // RELEASE (used when prerelease=false)
             create<MavenPublication>("release") {
                 groupId = publishGroupId
                 artifactId = publishArtifactId
-                version = publishVersion
+                version = effectiveVersion
 
                 artifact(aarFile) { builtBy(tasks.named(aarTaskName)) }
                 artifact(tasks.named(sourcesJarTaskName).get())
@@ -36,7 +41,7 @@ afterEvaluate {
                 pom {
                     name.set(publishArtifactId)
                     packaging = "aar"
-                    description.set("Velocity Career Labs Android SDK consumer app.")
+                    description.set("Velocity Career Labs Android SDK.")
                     url.set("https://github.com/velocitycareerlabs/WalletSdkKmp")
                     licenses {
                         license {
@@ -59,20 +64,20 @@ afterEvaluate {
                 }
             }
 
-            // ---- RC ----
+            // RC (used when prerelease=true) – same version/effectiveVersion
             create<MavenPublication>("rc") {
                 groupId = publishGroupId
                 artifactId = publishArtifactId
-                version = "$publishVersion-rc"
+                version = effectiveVersion
 
                 artifact(aarFile) { builtBy(tasks.named(aarTaskName)) }
                 artifact(tasks.named(sourcesJarTaskName).get())
                 artifact(tasks.named("androidDokkaJavadocJar").get())
 
                 pom {
-                    name.set("$publishArtifactId-rc")
+                    name.set(publishArtifactId) // do NOT append "-rc" here; version already has it
                     packaging = "aar"
-                    description.set("Velocity Career Labs Android SDK RC build.")
+                    description.set("Velocity Career Labs Android SDK.")
                     url.set("https://github.com/velocitycareerlabs/WalletSdkKmp")
                     licenses {
                         license {

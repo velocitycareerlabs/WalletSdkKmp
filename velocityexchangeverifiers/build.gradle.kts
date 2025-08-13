@@ -12,19 +12,35 @@ plugins {
     alias(libs.plugins.dokka)
 }
 
-// ----- Artifact coordinates -----
 val publishGroupId = providers.gradleProperty("PUBLISH_GROUP_ID").get()
 val publishArtifactId = providers.gradleProperty("PUBLISH_ARTIFACT_ID").get()
 val publishVersion = providers.gradleProperty("PUBLISH_VERSION").get()
 
+val cliProjectVersion = providers.gradleProperty("projectVersion").orNull
+val isPrerelease =
+    providers
+        .gradleProperty("prerelease")
+        .map { it.toBoolean() }
+        .orElse(false)
+        .get()
+
+val effectiveBase = cliProjectVersion ?: publishVersion
+val effectiveVersion = if (isPrerelease) "$effectiveBase-rc" else effectiveBase
+
 group = publishGroupId
 version = publishVersion
 
-extra["publishVersion"] = publishVersion
-extra["publishArtifactId"] = publishArtifactId
 extra["publishGroupId"] = publishGroupId
+extra["publishArtifactId"] = publishArtifactId
+extra["publishVersion"] = publishVersion
+extra["effectiveVersion"] = effectiveVersion
 
 apply(from = "android-publish.gradle.kts")
+
+// TODO: For future optimization of building only the targets that are needed
+// val targetJs = providers.gradleProperty("targetJs").isPresent
+// val targetIos = providers.gradleProperty("targetIos").isPresent
+// val targetAndroid = providers.gradleProperty("targetAndroid").isPresent
 
 kotlin {
     jvmToolchain(17)
@@ -43,14 +59,12 @@ kotlin {
             providers
                 .gradleProperty("ANDROID_COMPILE_SDK")
                 .map(String::toInt)
-//            .orElse(35)
                 .get()
 
         minSdk =
             providers
                 .gradleProperty("ANDROID_MIN_SDK")
                 .map(String::toInt)
-//            .orElse(24)
                 .get()
 
         withHostTestBuilder { }
@@ -162,7 +176,6 @@ kotlin {
 //                implementation(libs.kotlin.stdlib)
                 implementation(libs.kotlinx.serialization.json)
                 implementation(libs.kotlinx.coroutines.core)
-                implementation(libs.kotlinx.coroutines.test)
                 // Add KMP dependencies here
             }
         }
@@ -219,14 +232,34 @@ tasks.withType<DokkaTask>().configureEach {
 // Build a real javadoc jar from Dokka HTML output
 tasks.register<Jar>("androidDokkaJavadocJar") {
     group = JavaBasePlugin.DOCUMENTATION_GROUP
-    description = "Assembles Dokka HTML into a javadoc-classified jar for Maven Central"
     archiveClassifier.set("javadoc")
     dependsOn(tasks.named("dokkaHtml"))
     from(layout.buildDirectory.dir("dokka/html"))
 }
 
-// Aggregate build helper
-// Remove any assembleRelease/assembleRc registration
+tasks.register("assembleAndroid") {
+    group = "build"
+    dependsOn(
+        tasks.named("assemble"),
+        tasks.named("androidDokkaJavadocJar"),
+    )
+}
+
+tasks.register("assembleIos") {
+    group = "build"
+    dependsOn(
+        tasks.named("assemble"),
+        tasks.named("assembleXCFramework"),
+    )
+}
+
+tasks.register("assembleJs") {
+    group = "build"
+    dependsOn(
+        rootProject.tasks.named("kotlinUpgradeYarnLock"),
+        tasks.named("jsNodeProductionLibraryDistribution"),
+    )
+}
 
 tasks.register("assembleAllTargets") {
     group = "build"
@@ -237,4 +270,90 @@ tasks.register("assembleAllTargets") {
         tasks.matching { it.name == "assembleXCFramework" },
         tasks.matching { it.name == "jsNodeProductionLibraryDistribution" },
     )
+}
+
+// Aggregate build helper
+tasks.register("verifyExpectedArtifactsExist") {
+    group = "verification"
+    doLast {
+        fun printDir(
+            title: String,
+            dirPath: String,
+        ) {
+            println("📂 $title: $dirPath")
+            val d = file(dirPath)
+            if (d.exists() && d.isDirectory) {
+                d.listFiles()?.forEach { println(" - ${it.name}") }
+            } else {
+                println("❌ Missing: $dirPath")
+            }
+        }
+        printDir("AAR", "build/outputs/aar")
+        printDir("LIBS", "build/libs")
+    }
+}
+
+// Helper: ensure we have a sourcesJar task and capture its name
+val sourcesJarTaskName: String by lazy {
+    val existing =
+        listOf(
+            "androidSourcesJar",
+            "androidReleaseSourcesJar",
+            "sourcesJar",
+        ).firstOrNull { tasks.findByName(it) != null }
+
+    if (existing != null) {
+        existing
+    } else {
+        // Fallback: create a minimal sources jar from android/common sources
+        val t =
+            tasks.register<Jar>("androidSourcesJar") {
+                archiveClassifier.set("sources")
+                // KMP typical locations
+                from("src/androidMain/kotlin")
+                from("src/androidMain/java")
+                from("src/commonMain/kotlin")
+                // Don’t fail if folders are missing
+                includeEmptyDirs = false
+            }
+        t.name
+    }
+}
+
+// Clean the whole artifact root once per run (CI does this before staging)
+tasks.register<Delete>("cleanStagingRoot") {
+    delete(layout.projectDirectory.dir("target/staging-deploy/io/velocitycareerlabs/velocityexchangeverifiers"))
+}
+
+// Stage only the current EFFECTIVE version directory
+tasks.register<Sync>("stageArtifacts") {
+    dependsOn(
+        "cleanStagingRoot",
+        "assembleAndroid",
+        "androidDokkaJavadocJar",
+        sourcesJarTaskName,
+    )
+    val groupPath = publishGroupId.replace('.', '/')
+    val mavenPath = "$groupPath/$publishArtifactId/$effectiveVersion/"
+    into(layout.projectDirectory.dir("target/staging-deploy/$mavenPath"))
+
+    // AAR -> velocityexchangeverifiers-<effectiveVersion>.aar
+    from(layout.buildDirectory.dir("outputs/aar")) {
+        include("*.aar")
+        rename { "$publishArtifactId-$effectiveVersion.aar" }
+    }
+
+    // Sources and Javadoc jars
+    // We rename whatever is produced to the exact names Central expects
+    from(layout.buildDirectory.dir("libs")) {
+        include("**/*sources*.jar", "**/*javadoc*.jar")
+        exclude("**/*-metadata.jar*", "**/*-kotlin-tooling-metadata.jar")
+        rename { n ->
+            when {
+                n.contains("sources") -> "$publishArtifactId-$effectiveVersion-sources.jar"
+                n.contains("javadoc") -> "$publishArtifactId-$effectiveVersion-javadoc.jar"
+                else -> n
+            }
+        }
+    }
 }
