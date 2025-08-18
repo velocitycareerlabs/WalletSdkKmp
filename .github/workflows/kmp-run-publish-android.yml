@@ -186,6 +186,14 @@ jobs:
             exit 1
           fi
 
+      - name: Set JReleaser SDK variables
+        shell: bash
+        run: |
+          echo "SDK_NAME=velocityexchangeverifiers" >> $GITHUB_ENV
+          echo "SDK_DIR=velocityexchangeverifiers" >> $GITHUB_ENV
+          echo "MAVEN_GROUP_ID=io.velocitycareerlabs" >> $GITHUB_ENV
+          echo "MAVEN_GROUP_PATH=io/velocitycareerlabs" >> $GITHUB_ENV
+
       - name: 🚀 Run JReleaser full-release
         uses: jreleaser/release-action@v2
         with:
