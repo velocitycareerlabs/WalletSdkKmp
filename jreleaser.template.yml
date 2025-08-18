@@ -8,6 +8,7 @@
 project:
   # Drives bundle name: <groupId>-<project.name>-<version>-bundle.zip
   name: {{env.SDK_NAME}}
+  # version comes from JRELEASER_PROJECT_VERSION (set in the workflow)
   description: Velocity Career Labs SDK
   authors:
     - Michael Avoyan
@@ -34,9 +35,9 @@ release:
   github:
     owner: velocitycareerlabs
     name: {{env.RELEASE_REPO}}
-    # token:       JRELEASER_GITHUB_TOKEN
-    # tagName:     JRELEASER_TAG_NAME
-    # releaseName: JRELEASER_RELEASE_NAME
+    # token: from JRELEASER_GITHUB_TOKEN
+    # tagName: from JRELEASER_TAG_NAME
+    # releaseName: from JRELEASER_RELEASE_NAME
     sign: true
     prerelease:
       enabled: true
