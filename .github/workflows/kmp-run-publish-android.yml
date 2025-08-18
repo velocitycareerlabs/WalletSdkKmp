@@ -53,7 +53,7 @@ jobs:
           set -euo pipefail
           VERSION=$(grep '^PUBLISH_VERSION=' gradle.properties | cut -d'=' -f2 | tr -d '[:space:]')
           if [ -z "$VERSION" ]; then echo "PUBLISH_VERSION missing in gradle.properties"; exit 1; fi
-          echo "RELEASE_VERSION=$VERSION" >> $GITHUB_ENV
+          echo "RELEASE_VERSION=$VERSION" >> "$GITHUB_ENV"
           echo "Found version: $VERSION"
 
       - name: 🔧 Set publication name and POM file name
@@ -155,13 +155,12 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          echo "SDK_NAME=velocityexchangeverifiers" >> $GITHUB_ENV
-          echo "SDK_DIR=velocityexchangeverifiers" >> $GITHUB_ENV
-          echo "MAVEN_GROUP_ID=io.velocitycareerlabs" >> $GITHUB_ENV
-          echo "MAVEN_GROUP_PATH=io/velocitycareerlabs" >> $GITHUB_ENV
-          # Export the GitHub release repository name for JReleaser template
-          # Uses owner/repo from $GITHUB_REPOSITORY and strips the owner.
-          echo "RELEASE_REPO=${GITHUB_REPOSITORY#*/}" >> $GITHUB_ENV
+          echo "SDK_NAME=velocityexchangeverifiers" >> "$GITHUB_ENV"
+          echo "SDK_DIR=velocityexchangeverifiers" >> "$GITHUB_ENV"
+          echo "MAVEN_GROUP_ID=io.velocitycareerlabs" >> "$GITHUB_ENV"
+          echo "MAVEN_GROUP_PATH=io/velocitycareerlabs" >> "$GITHUB_ENV"
+          # Use current repo name for GitHub releases (e.g., WalletSdkKmp)
+          echo "RELEASE_REPO=${GITHUB_REPOSITORY#*/}" >> "$GITHUB_ENV"
 
       - name: 🚀 Run JReleaser full-release
         uses: jreleaser/release-action@v2
