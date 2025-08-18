@@ -27,17 +27,17 @@ signing:
   active: ALWAYS
   armored: true
   mode: MEMORY
-  # publicKey:   JRELEASER_GPG_PUBLIC_KEY
-  # secretKey:   JRELEASER_GPG_SECRET_KEY
-  # passphrase:  JRELEASER_GPG_PASSPHRASE
+  # publicKey: from JRELEASER_GPG_PUBLIC_KEY
+  # secretKey: from JRELEASER_GPG_SECRET_KEY
+  # passphrase: from JRELEASER_GPG_PASSPHRASE
 
 release:
   github:
     owner: velocitycareerlabs
     name: {{env.RELEASE_REPO}}
-    # token:       JRELEASER_GITHUB_TOKEN
-    # tagName:     JRELEASER_TAG_NAME
-    # releaseName: JRELEASER_RELEASE_NAME
+    # token: from JRELEASER_GITHUB_TOKEN
+    # tagName: from JRELEASER_TAG_NAME
+    # releaseName: from JRELEASER_RELEASE_NAME
     sign: true
     prerelease:
       enabled: true
@@ -57,16 +57,16 @@ deploy:
     mavenCentral:
       # Key can be any name; using SDK_NAME for clarity
         {{env.SDK_NAME}}:
-          active: ALWAYS
-          url: https://central.sonatype.com/api/v1/publisher
-      # username: JRELEASER_MAVENCENTRAL_USERNAME
-      # password: JRELEASER_MAVENCENTRAL_PASSWORD
-      # stage:    JRELEASER_MAVENCENTRAL_STAGE
-          authorization: BASIC
-          sign: true
-          checksums: true
-          sourceJar: true
-          javadocJar: true
-          verifyPom: false
-          stagingRepositories:
-            - "{{env.SDK_DIR}}/target/staging-deploy"
+        active: ALWAYS
+        url: https://central.sonatype.com/api/v1/publisher
+        # username: JRELEASER_MAVENCENTRAL_USERNAME
+        # password: JRELEASER_MAVENCENTRAL_PASSWORD
+        # stage:    JRELEASER_MAVENCENTRAL_STAGE
+        authorization: BASIC
+        sign: true
+        checksums: true
+        sourceJar: true
+        javadocJar: true
+        verifyPom: false
+        stagingRepositories:
+          - "{{env.SDK_DIR}}/target/staging-deploy"
