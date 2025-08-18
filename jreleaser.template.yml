@@ -57,16 +57,16 @@ deploy:
     mavenCentral:
       # Key can be any name; using SDK_NAME for clarity
         {{env.SDK_NAME}}:
-        active: ALWAYS
-        url: https://central.sonatype.com/api/v1/publisher
-        # username: JRELEASER_MAVENCENTRAL_USERNAME
-        # password: JRELEASER_MAVENCENTRAL_PASSWORD
-        # stage:    JRELEASER_MAVENCENTRAL_STAGE
-        authorization: BASIC
-        sign: true
-        checksums: true
-        sourceJar: true
-        javadocJar: true
-        verifyPom: false
-        stagingRepositories:
-          - "{{env.SDK_DIR}}/target/staging-deploy"
+          active: ALWAYS
+          url: https://central.sonatype.com/api/v1/publisher
+      # username: JRELEASER_MAVENCENTRAL_USERNAME
+      # password: JRELEASER_MAVENCENTRAL_PASSWORD
+      # stage:    JRELEASER_MAVENCENTRAL_STAGE
+          authorization: BASIC
+          sign: true
+          checksums: true
+          sourceJar: true
+          javadocJar: true
+          verifyPom: false
+          stagingRepositories:
+            - "{{env.SDK_DIR}}/target/staging-deploy"
