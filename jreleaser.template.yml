@@ -1,9 +1,9 @@
 # This file is Mustache-templated by JReleaser. Values come from env vars:
-#   SDK_NAME         e.g. velocityexchangeverifiers           (artifactId / distribution name)
-#   SDK_DIR          e.g. velocityexchangeverifiers           (module directory)
-#   MAVEN_GROUP_ID   e.g. io.velocitycareerlabs               (groupId)
-#   MAVEN_GROUP_PATH e.g. io/velocitycareerlabs               (groupId with slashes)
-#   RELEASE_REPO     e.g. VelocityExchangeVerifiers           (GitHub repo name for releases)
+#   SDK_NAME         e.g. velocityexchangeverifiers
+#   SDK_DIR          e.g. velocityexchangeverifiers
+#   MAVEN_GROUP_ID   e.g. io.velocitycareerlabs
+#   MAVEN_GROUP_PATH e.g. io/velocitycareerlabs
+#   RELEASE_REPO     e.g. VelocityExchangeVerifiers (GitHub repo name)
 
 project:
   # Drives bundle name: <groupId>-<project.name>-<version>-bundle.zip
@@ -27,17 +27,17 @@ signing:
   active: ALWAYS
   armored: true
   mode: MEMORY
-  # publicKey: from JRELEASER_GPG_PUBLIC_KEY
-  # secretKey: from JRELEASER_GPG_SECRET_KEY
-  # passphrase: from JRELEASER_GPG_PASSPHRASE
+  # publicKey:   JRELEASER_GPG_PUBLIC_KEY
+  # secretKey:   JRELEASER_GPG_SECRET_KEY
+  # passphrase:  JRELEASER_GPG_PASSPHRASE
 
 release:
   github:
     owner: velocitycareerlabs
     name: {{env.RELEASE_REPO}}
-    # token: from JRELEASER_GITHUB_TOKEN
-    # tagName: from JRELEASER_TAG_NAME
-    # releaseName: from JRELEASER_RELEASE_NAME
+    # token:       JRELEASER_GITHUB_TOKEN
+    # tagName:     JRELEASER_TAG_NAME
+    # releaseName: JRELEASER_RELEASE_NAME
     sign: true
     prerelease:
       enabled: true

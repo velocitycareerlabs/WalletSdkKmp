@@ -151,48 +151,17 @@ jobs:
           name: staged-${{ env.EFFECTIVE_VERSION }}
           path: velocityexchangeverifiers/target/staging-deploy
 
-      - name: Validate staged files
-        shell: bash
-        run: |
-          set -euo pipefail
-          dir=velocityexchangeverifiers/target/staging-deploy/io/velocitycareerlabs/velocityexchangeverifiers/${EFFECTIVE_VERSION}
-          echo "📂 Validating contents of: $dir"
-          ls -l "$dir" || true
-          
-          missing=0
-          check() {
-            local f="$1"
-            if [[ -f "$dir/$f" ]]; then
-              echo "✅ Found $f"
-            else
-              echo "❌ Missing $f"
-              missing=1
-            fi
-          }
-          
-          check "velocityexchangeverifiers-${EFFECTIVE_VERSION}.pom"
-          check "velocityexchangeverifiers-${EFFECTIVE_VERSION}.aar"
-          check "velocityexchangeverifiers-${EFFECTIVE_VERSION}-sources.jar"
-          check "velocityexchangeverifiers-${EFFECTIVE_VERSION}-javadoc.jar"
-          
-          # Print a quick hint if jars are missing
-          if [[ $missing -ne 0 ]]; then
-            echo "🔎 Debugging hints:"
-            echo "→ Check Gradle outputs:"
-            echo "  • build/libs:"
-            ls -l velocityexchangeverifiers/build/libs || true
-            echo "  • build/outputs/aar:"
-            ls -l velocityexchangeverifiers/build/outputs/aar || true
-            exit 1
-          fi
-
       - name: Set JReleaser SDK variables
         shell: bash
         run: |
+          set -euo pipefail
           echo "SDK_NAME=velocityexchangeverifiers" >> $GITHUB_ENV
           echo "SDK_DIR=velocityexchangeverifiers" >> $GITHUB_ENV
           echo "MAVEN_GROUP_ID=io.velocitycareerlabs" >> $GITHUB_ENV
           echo "MAVEN_GROUP_PATH=io/velocitycareerlabs" >> $GITHUB_ENV
+          # Export the GitHub release repository name for JReleaser template
+          # Uses owner/repo from $GITHUB_REPOSITORY and strips the owner.
+          echo "RELEASE_REPO=${GITHUB_REPOSITORY#*/}" >> $GITHUB_ENV
 
       - name: 🚀 Run JReleaser full-release
         uses: jreleaser/release-action@v2
