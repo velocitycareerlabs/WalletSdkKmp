@@ -69,4 +69,4 @@ deploy:
         javadocJar: true
         verifyPom: false
         stagingRepositories:
-          - "{{env.SDK_DIR}}/target/staging-deploy"
+          - "target/staging-deploy"
