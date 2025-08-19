@@ -54,6 +54,8 @@ distributions:
 deploy:
   maven:
     mavenCentral:
+      # Key can be any name; using SDK_NAME for clarity
+        {{env.SDK_NAME}}:
         active: ALWAYS
         url: "https://central.sonatype.com/api/v1/publisher"
         # username: JRELEASER_MAVENCENTRAL_USERNAME
