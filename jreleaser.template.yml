@@ -3,65 +3,65 @@
 #   SDK_DIR          e.g. velocityexchangeverifiers           (module directory)
 #   MAVEN_GROUP_ID   e.g. io.velocitycareerlabs               (groupId)
 #   MAVEN_GROUP_PATH e.g. io/velocitycareerlabs               (groupId with slashes)
-#   RELEASE_REPO     e.g. VelocityExchangeVerifiers           (GitHub repo name for releases)
+#   RELEASE_REPO     e.g. WalletSdkKmp                        (GitHub repo name for releases)
 
 project:
   # Drives bundle name: <groupId>-<project.name>-<version>-bundle.zip
-  name: "{{env.SDK_NAME}}"
+  name: {{env.SDK_NAME}}
   # version comes from JRELEASER_PROJECT_VERSION (set in the workflow)
-  description: "Velocity Career Labs SDK"
+  description: Velocity Career Labs SDK
   authors:
-    - "Michael Avoyan"
+    - Michael Avoyan
   inceptionYear: 2025
-  license: "Apache-2.0"
+  license: Apache-2.0
   links:
-    homepage: "https://github.com/velocitycareerlabs"
+    homepage: https://github.com/velocitycareerlabs
   languages:
     java:
-      groupId: "{{env.MAVEN_GROUP_ID}}"
-      artifactId: "{{env.SDK_NAME}}"
+      groupId: {{env.MAVEN_GROUP_ID}}
+      artifactId: {{env.SDK_NAME}}
   extraProperties:
-    displayName: "Velocity Career Labs Android SDK"
+    displayName: Velocity Career Labs Android SDK
 
 signing:
   active: ALWAYS
   armored: true
   mode: MEMORY
-  # publicKey: from JRELEASER_GPG_PUBLIC_KEY
-  # secretKey: from JRELEASER_GPG_SECRET_KEY
-  # passphrase: from JRELEASER_GPG_PASSPHRASE
+  # publicKey:   JRELEASER_GPG_PUBLIC_KEY    (provided by workflow env)
+  # secretKey:   JRELEASER_GPG_SECRET_KEY    (provided by workflow env)
+  # passphrase:  JRELEASER_GPG_PASSPHRASE    (provided by workflow env)
 
 release:
   github:
-    owner: "velocitycareerlabs"
-    name: "{{env.RELEASE_REPO}}"
-    # token: from JRELEASER_GITHUB_TOKEN
-    # tagName: from JRELEASER_TAG_NAME
-    # releaseName: from JRELEASER_RELEASE_NAME
+    owner: velocitycareerlabs
+    name: {{env.RELEASE_REPO}}
+    # token:       JRELEASER_GITHUB_TOKEN     (provided by workflow env)
+    # tagName:     JRELEASER_TAG_NAME         (provided by workflow env)
+    # releaseName: JRELEASER_RELEASE_NAME     (provided by workflow env)
     sign: true
     prerelease:
       enabled: true
-      # pattern:   JRELEASER_PRERELEASE_PATTERN
+      # pattern:   JRELEASER_PRERELEASE_PATTERN  (set via env in workflow; omit here)
 
 # Distribution name matches project.name (SDK_NAME)
 distributions:
-  {{env.SDK_NAME}}:
-    type: BINARY
-    artifacts:
-      # Staged artifacts prepared by Gradle:
-      # <SDK_DIR>/target/staging-deploy/<groupPath>/<artifactId>/<version>/**
-      - path: "{{env.SDK_DIR}}/target/staging-deploy/{{env.MAVEN_GROUP_PATH}}/{{env.SDK_NAME}}/**"
+    {{env.SDK_NAME}}:
+      type: BINARY
+      artifacts:
+        # Staged artifacts prepared by Gradle:
+        # <SDK_DIR>/target/staging-deploy/<groupPath>/<artifactId>/<version>/**
+        - path: "{{env.SDK_DIR}}/target/staging-deploy/{{env.MAVEN_GROUP_PATH}}/{{env.SDK_NAME}}/**"
 
 deploy:
   maven:
     mavenCentral:
-      # Key can be any name; using SDK_NAME for clarity
-      {{env.SDK_NAME}}:
+      # Logical id for the target repo config. Keep it constant.
+      central:
         active: ALWAYS
-        url: "https://central.sonatype.com/api/v1/publisher"
-        # username: JRELEASER_MAVENCENTRAL_USERNAME
-        # password: JRELEASER_MAVENCENTRAL_PASSWORD
-        # stage:    JRELEASER_MAVENCENTRAL_STAGE
+        url: https://central.sonatype.com/api/v1/publisher
+        # username: JRELEASER_MAVENCENTRAL_USERNAME  (provided by workflow env)
+        # password: JRELEASER_MAVENCENTRAL_PASSWORD  (provided by workflow env)
+        # stage:    JRELEASER_MAVENCENTRAL_STAGE     (provided by workflow env)
         authorization: BASIC
         sign: true
         checksums: true
