@@ -168,7 +168,7 @@ jobs:
           version: 1.18.0
           arguments: >
             full-release
-            --config-file=../jreleaser.template.yml
+            --config-file=jreleaser.template.yml
             --debug
 #          working-directory: velocityexchangeverifiers
         env:
