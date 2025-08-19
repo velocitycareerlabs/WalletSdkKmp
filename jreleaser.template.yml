@@ -27,16 +27,16 @@ signing:
   active: ALWAYS
   armored: true
   mode: MEMORY
-  # Keys & passphrase provided via env in the workflow:
-  # JRELEASER_GPG_PUBLIC_KEY, JRELEASER_GPG_SECRET_KEY, JRELEASER_GPG_PASSPHRASE
+  # publicKey: from JRELEASER_GPG_PUBLIC_KEY
+  # secretKey: from JRELEASER_GPG_SECRET_KEY
 
 release:
   github:
     owner: "velocitycareerlabs"
     name: "{{env.RELEASE_REPO}}"
-    # token:       JRELEASER_GITHUB_TOKEN
-    # tagName:     JRELEASER_TAG_NAME
-    # releaseName: JRELEASER_RELEASE_NAME
+    # token: from JRELEASER_GITHUB_TOKEN
+    # tagName: from JRELEASER_TAG_NAME
+    # releaseName: from JRELEASER_RELEASE_NAME
     sign: true
     prerelease:
       enabled: true
