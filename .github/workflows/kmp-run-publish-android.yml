@@ -170,7 +170,7 @@ jobs:
             full-release
             --config-file=../jreleaser.template.yml
             --debug
-          working-directory: velocityexchangeverifiers
+#          working-directory: velocityexchangeverifiers
         env:
           JRELEASER_PROJECT_JAVA_ARTIFACT_ID: velocityexchangeverifiers
           JRELEASER_MAVENCENTRAL_USERNAME: ${{ secrets.MAVEN_CENTRAL_TOKEN_USERNAME }}

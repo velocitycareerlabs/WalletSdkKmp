@@ -50,7 +50,7 @@ distributions:
     artifacts:
       # Staged artifacts prepared by Gradle:
       # <SDK_DIR>/target/staging-deploy/<groupPath>/<artifactId>/<version>/**
-      - path: "target/staging-deploy/**"
+      - path: "{{env.SDK_DIR}}/target/staging-deploy/**"
 
 deploy:
   maven:
@@ -69,4 +69,4 @@ deploy:
         javadocJar: true
         verifyPom: false
         stagingRepositories:
-          - "target/staging-deploy"
+          - "{{env.SDK_DIR}}/target/staging-deploy"
