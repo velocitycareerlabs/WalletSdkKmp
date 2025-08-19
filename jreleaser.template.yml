@@ -7,7 +7,7 @@
 
 project:
   # Drives bundle name: <groupId>-<project.name>-<version>-bundle.zip
-  name: {{env.SDK_NAME}}
+  name: "{{env.SDK_NAME}}"
   # version comes from JRELEASER_PROJECT_VERSION (set in the workflow)
   description: Velocity Career Labs SDK
   authors:
@@ -18,8 +18,8 @@ project:
     homepage: https://github.com/velocitycareerlabs
   languages:
     java:
-      groupId: {{env.MAVEN_GROUP_ID}}
-      artifactId: {{env.SDK_NAME}}
+      groupId: "{{env.MAVEN_GROUP_ID}}"
+      artifactId: "{{env.SDK_NAME}}"
   extraProperties:
     displayName: Velocity Career Labs Android SDK
 
@@ -34,7 +34,7 @@ signing:
 release:
   github:
     owner: velocitycareerlabs
-    name: {{env.RELEASE_REPO}}
+    name: "{{env.RELEASE_REPO}}"
     # token:       JRELEASER_GITHUB_TOKEN     (provided by workflow env)
     # tagName:     JRELEASER_TAG_NAME         (provided by workflow env)
     # releaseName: JRELEASER_RELEASE_NAME     (provided by workflow env)
@@ -45,7 +45,7 @@ release:
 
 # Distribution name matches project.name (SDK_NAME)
 distributions:
-  {{env.SDK_NAME}}:
+  "{{env.SDK_NAME}}":
     type: BINARY
     artifacts:
       # Staged artifacts prepared by Gradle:
