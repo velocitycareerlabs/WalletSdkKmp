@@ -54,7 +54,6 @@ distributions:
 deploy:
   maven:
     mavenCentral:
-      main:
         active: ALWAYS
         url: "https://central.sonatype.com/api/v1/publisher"
         # username: JRELEASER_MAVENCENTRAL_USERNAME
