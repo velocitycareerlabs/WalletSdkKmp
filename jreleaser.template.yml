@@ -44,27 +44,27 @@ release:
 
 # Use stable keys; values are fully env-driven
 distributions:
-  sdk:
+  {{env.SDK_NAME}}:
     type: BINARY
     artifacts:
-      # Staged artifacts prepared by Gradle:
-      # <SDK_DIR>/target/staging-deploy/<groupPath>/<artifactId>/<version>/**
-      - path: "{{env.SDK_DIR}}/target/staging-deploy/{{env.MAVEN_GROUP_PATH}}/{{env.SDK_NAME}}/**"
+  # Staged artifacts prepared by Gradle:
+  # <SDK_DIR>/target/staging-deploy/<groupPath>/<artifactId>/<version>/**
+  - path: "{{env.SDK_DIR}}/target/staging-deploy/{{env.MAVEN_GROUP_PATH}}/{{env.SDK_NAME}}/**"
 
 deploy:
   maven:
     mavenCentral:
       main:
         active: ALWAYS
-        url: "https://central.sonatype.com/api/v1/publisher"
-        # username: JRELEASER_MAVENCENTRAL_USERNAME
-        # password: JRELEASER_MAVENCENTRAL_PASSWORD
-        # stage:    JRELEASER_MAVENCENTRAL_STAGE
-        authorization: BASIC
-        sign: true
-        checksums: true
-        sourceJar: true
-        javadocJar: true
-        verifyPom: false
-        stagingRepositories:
-          - "{{env.SDK_DIR}}/target/staging-deploy"
+      url: "https://central.sonatype.com/api/v1/publisher"
+      # username: JRELEASER_MAVENCENTRAL_USERNAME
+      # password: JRELEASER_MAVENCENTRAL_PASSWORD
+      # stage:    JRELEASER_MAVENCENTRAL_STAGE
+      authorization: BASIC
+      sign: true
+      checksums: true
+      sourceJar: true
+      javadocJar: true
+      verifyPom: false
+      stagingRepositories:
+        - "{{env.SDK_DIR}}/target/staging-deploy"
