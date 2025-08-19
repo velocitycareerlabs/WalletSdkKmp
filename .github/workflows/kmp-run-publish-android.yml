@@ -78,10 +78,10 @@ jobs:
           fi
           echo "PUBLICATION_NAME=${PUB_NAME}" >> "$GITHUB_ENV"
           echo "EFFECTIVE_VERSION=${EFFECTIVE}" >> "$GITHUB_ENV"
-          echo "POM_FILE_NAME=${SDK_NAME}-${EFFECTIVE}.pom" >> "$GITHUB_ENV"
+          echo "POM_FILE_NAME=velocityexchangeverifiers-${EFFECTIVE}.pom" >> "$GITHUB_ENV"
           echo "Publication: ${PUB_NAME}"
           echo "Effective version: ${EFFECTIVE}"
-          echo "POM file: ${SDK_NAME}-${EFFECTIVE}.pom"
+          echo "POM file: velocityexchangeverifiers-${EFFECTIVE}.pom"
 
       - name: 🧪 Build AAR + Sources + Javadoc
         shell: bash
@@ -145,7 +145,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          POM=velocityexchangeverifiers/target/staging-deploy/io/velocitycareerlabs/velocityexchangeverifiers/${EFFECTIVE_VERSION}/$POM_FILE_NAME
+          POM="velocityexchangeverifiers/target/staging-deploy/io/velocitycareerlabs/velocityexchangeverifiers/${EFFECTIVE_VERSION}/${POM_FILE_NAME}"
           grep -q "<version>${EFFECTIVE_VERSION}</version>" "$POM" || { echo "POM version mismatch"; exit 1; }
 
       - name: 📜 Show staged file names
