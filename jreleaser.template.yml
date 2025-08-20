@@ -7,7 +7,7 @@
 
 project:
   # Drives bundle name: <groupId>-<project.name>-<version>-bundle.zip
-  name: "{{env.SDK_NAME}}"
+  name: "{{project.java.artifactId}}"
   # version comes from JRELEASER_PROJECT_VERSION (set in the workflow)
   description: Velocity Career Labs SDK
   authors:
@@ -18,8 +18,9 @@ project:
     homepage: https://github.com/velocitycareerlabs
   languages:
     java:
-      groupId: "{{env.MAVEN_GROUP_ID}}"
-      artifactId: "{{env.SDK_NAME}}"
+      # groupId stays constant across SDKs; artifactId is provided by env JRELEASER_PROJECT_JAVA_ARTIFACT_ID
+      groupId: io.velocitycareerlabs
+      # artifactId: (omit here; it’s supplied at runtime via JRELEASER_PROJECT_JAVA_ARTIFACT_ID)
   extraProperties:
     displayName: Velocity Career Labs Android SDK
 
@@ -34,7 +35,7 @@ signing:
 release:
   github:
     owner: velocitycareerlabs
-    name: "{{env.RELEASE_REPO}}"
+    # name:        "{{env.RELEASE_REPO}}"     omit to let JReleaser auto-detect repo from git
     # token:       JRELEASER_GITHUB_TOKEN     (provided by workflow env)
     # tagName:     JRELEASER_TAG_NAME         (provided by workflow env)
     # releaseName: JRELEASER_RELEASE_NAME     (provided by workflow env)
@@ -45,12 +46,12 @@ release:
 
 # Distribution name matches project.name (SDK_NAME)
 distributions:
-  "{{env.SDK_NAME}}":
+  android-sdk:
     type: BINARY
     artifacts:
       # Staged artifacts prepared by Gradle:
-      # <SDK_DIR>/target/staging-deploy/<groupPath>/<artifactId>/<version>/**
-      - path: "{{env.SDK_DIR}}/target/staging-deploy/**"
+      # <artifactId>/target/staging-deploy/<groupPath>/<artifactId>/<version>/**
+      - path: "{{project.java.artifactId}}/target/staging-deploy/**"
 
 deploy:
   maven:
@@ -69,4 +70,4 @@ deploy:
         javadocJar: true
         verifyPom: false
         stagingRepositories:
-          - "{{env.SDK_DIR}}/target/staging-deploy"
+          - "{{project.java.artifactId}}/target/staging-deploy"
