@@ -324,6 +324,7 @@ tasks.register<Sync>("stageArtifacts") {
     )
     val groupPath = publishGroupId.replace('.', '/')
     val mavenPath = "$groupPath/$publishArtifactId/$effectiveVersion/"
+    // IMPORTANT: write to REPO ROOT so JReleaser (basedir=repo root) can find it.
     into(rootProject.layout.projectDirectory.dir("target/staging-deploy/$mavenPath"))
 
     // AAR -> velocityexchangeverifiers-<effectiveVersion>.aar

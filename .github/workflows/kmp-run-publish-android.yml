@@ -103,8 +103,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          rm -rf velocityexchangeverifiers/target/staging-deploy/io/velocitycareerlabs/velocityexchangeverifiers
-          mkdir -p velocityexchangeverifiers/target/staging-deploy/io/velocitycareerlabs/velocityexchangeverifiers
+          rm -rf target/staging-deploy/io/velocitycareerlabs/velocityexchangeverifiers
+          mkdir -p target/staging-deploy/io/velocitycareerlabs/velocityexchangeverifiers
 
       - name: 📦 Stage Artifacts
         run: |
@@ -129,13 +129,13 @@ jobs:
           test -d target/staging-deploy || { echo "missing target/staging-deploy"; exit 1; }
 
       - name: 📂 List staged artifacts
-        run: ls -R velocityexchangeverifiers/target/staging-deploy
+        run: ls -R target/staging-deploy
 
       - name: 🔒 Guard staged contents
         shell: bash
         run: |
           set -euo pipefail
-          BASE=velocityexchangeverifiers/target/staging-deploy/io/velocitycareerlabs/velocityexchangeverifiers
+          BASE=target/staging-deploy/io/velocitycareerlabs/velocityexchangeverifiers
           echo "Contents of $BASE:"; ls -1 "$BASE" || true
           for d in "$BASE"/*; do
             [ -d "$d" ] || continue
@@ -150,20 +150,15 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          POM="velocityexchangeverifiers/target/staging-deploy/io/velocitycareerlabs/velocityexchangeverifiers/${EFFECTIVE_VERSION}/${POM_FILE_NAME}"
+          POM="target/staging-deploy/io/velocitycareerlabs/velocityexchangeverifiers/${EFFECTIVE_VERSION}/${POM_FILE_NAME}"
           grep -q "<version>${EFFECTIVE_VERSION}</version>" "$POM" || { echo "POM version mismatch"; exit 1; }
 
       - name: 📜 Show staged file names
         shell: bash
         run: |
           set -euo pipefail
-          dir=velocityexchangeverifiers/target/staging-deploy/io/velocitycareerlabs/velocityexchangeverifiers/${EFFECTIVE_VERSION}
+          dir=target/staging-deploy/io/velocitycareerlabs/velocityexchangeverifiers/${EFFECTIVE_VERSION}
           ls -l "$dir"
-
-      - name: 🔍 Check repo-root staging (debug)
-        run: |
-          echo "Repo root contents of target/staging-deploy:"
-          ls -R target/staging-deploy || (echo "root staging missing" && exit 1)
 
       - name: ⬆️ Upload staged bundle (debug)
         if: always()
@@ -171,30 +166,6 @@ jobs:
         with:
           name: staged-${{ env.EFFECTIVE_VERSION }}
           path: target/staging-deploy
-
-      - name: 🌉 Mirror staged artifacts to repo root (final)
-        run: |
-          mkdir -p target/staging-deploy
-          rsync -av --delete velocityexchangeverifiers/target/staging-deploy/ target/staging-deploy/
-          echo "Repo-root staging after final mirror:"
-          find target/staging-deploy -maxdepth 4 -type f -print | sed 's/^/ - /'
-
-      - name: 🔒 Final preflight (repo-root must have all files)
-        shell: bash
-        run: |
-          set -euo pipefail
-          BASE=target/staging-deploy/io/velocitycareerlabs/velocityexchangeverifiers/${EFFECTIVE_VERSION}
-          echo "Verifying required files in $BASE"
-          test -d "$BASE" || { echo "Missing dir: $BASE"; exit 1; }
-          for f in \
-            "velocityexchangeverifiers-${EFFECTIVE_VERSION}.aar" \
-            "velocityexchangeverifiers-${EFFECTIVE_VERSION}-sources.jar" \
-            "velocityexchangeverifiers-${EFFECTIVE_VERSION}-javadoc.jar" \
-            "${POM_FILE_NAME}"
-          do
-            test -f "$BASE/$f" || { echo "Missing file: $BASE/$f"; exit 1; }
-          done
-          echo "All required files are present."
 
       - name: 🚀 Run JReleaser full-release
         uses: jreleaser/release-action@v2
