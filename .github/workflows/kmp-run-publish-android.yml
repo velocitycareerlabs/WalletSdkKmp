@@ -41,6 +41,9 @@ jobs:
           # Use current repo name for GitHub releases (e.g., WalletSdkKmp)
           echo "RELEASE_REPO=${GITHUB_REPOSITORY#*/}" >> "$GITHUB_ENV"
 
+      - name: Derive absolute STAGING_ROOT for JReleaser
+        run: echo "STAGING_ROOT=$GITHUB_WORKSPACE/${{ env.SDK_DIR }}/target/staging-deploy" >> "$GITHUB_ENV"
+
       - name: ☕ Set up Java
         uses: actions/setup-java@v4
         with:
@@ -161,6 +164,11 @@ jobs:
         with:
           name: staged-${{ env.EFFECTIVE_VERSION }}
           path: velocityexchangeverifiers/target/staging-deploy
+
+      - name: 🔍 Check STAGING_ROOT contents (debug)
+        run: |
+          echo "STAGING_ROOT=$STAGING_ROOT"
+          ls -R "$STAGING_ROOT" || (echo "STAGING_ROOT missing" && exit 1)
 
       - name: 🚀 Run JReleaser full-release
         uses: jreleaser/release-action@v2
