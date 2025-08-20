@@ -154,11 +154,6 @@ jobs:
           dir=velocityexchangeverifiers/target/staging-deploy/io/velocitycareerlabs/velocityexchangeverifiers/${EFFECTIVE_VERSION}
           ls -l "$dir"
 
-      - name: 🌉 Mirror staged artifacts to repo root
-        run: |
-          mkdir -p target/staging-deploy
-          rsync -av --delete velocityexchangeverifiers/target/staging-deploy/ target/staging-deploy/
-
       - name: 🔍 Check repo-root staging (debug)
         run: |
           echo "Repo root contents of target/staging-deploy:"

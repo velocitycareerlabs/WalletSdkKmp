@@ -324,7 +324,7 @@ tasks.register<Sync>("stageArtifacts") {
     )
     val groupPath = publishGroupId.replace('.', '/')
     val mavenPath = "$groupPath/$publishArtifactId/$effectiveVersion/"
-    into(layout.projectDirectory.dir("target/staging-deploy/$mavenPath"))
+    into(rootProject.layout.projectDirectory.dir("target/staging-deploy/$mavenPath"))
 
     // AAR -> velocityexchangeverifiers-<effectiveVersion>.aar
     from(layout.buildDirectory.dir("outputs/aar")) {
