@@ -3,10 +3,6 @@ name: KMP RUN Publish Android
 on:
   workflow_dispatch:
     inputs:
-      sdk_name:
-        description: 'Velocity Career Labs Android SDK (velocityexchangeverifiers)'
-        required: true
-        type: string
       environment:
         description: 'Environment to deploy to'
         required: true
@@ -28,7 +24,7 @@ jobs:
   release-android-sdk:
     runs-on: macos-15
     env:
-      SDK_NAME: ${{ github.event.inputs.sdk_name }}
+      SDK_NAME: velocityexchangeverifiers
 
     steps:
       - name: 🧾 Checkout code
