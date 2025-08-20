@@ -3,10 +3,6 @@ name: KMP RUN Publish Android
 on:
   workflow_dispatch:
     inputs:
-      sdk_name:
-        description: 'Velocity Career Labs Android SDK (velocityexchangeverifiers)'
-        required: true
-        type: string
       environment:
         description: 'Environment to deploy to'
         required: true
@@ -27,14 +23,22 @@ concurrency:
 jobs:
   release-android-sdk:
     runs-on: macos-15
-    env:
-      SDK_NAME: ${{ github.event.inputs.sdk_name }}
 
     steps:
       - name: 🧾 Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Set JReleaser SDK variables
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "SDK_NAME=velocityexchangeverifiers" >> "$GITHUB_ENV"
+          echo "SDK_DIR=velocityexchangeverifiers" >> "$GITHUB_ENV"
+          echo "MAVEN_GROUP_ID=io.velocitycareerlabs" >> "$GITHUB_ENV"
+          echo "MAVEN_GROUP_PATH=io/velocitycareerlabs" >> "$GITHUB_ENV"
+          echo "RELEASE_REPO=${GITHUB_REPOSITORY#*/}" >> "$GITHUB_ENV"
 
       - name: ☕ Set up Java
         uses: actions/setup-java@v4
@@ -53,21 +57,16 @@ jobs:
           java -version
           ./gradlew --version
 
-      - name: 📝 Read versions & group from gradle.properties
+      - name: 📝 Get version from gradle.properties
         shell: bash
         run: |
           set -euo pipefail
           VERSION=$(grep '^PUBLISH_VERSION=' gradle.properties | cut -d'=' -f2 | tr -d '[:space:]')
-          GROUP=$(grep '^PUBLISH_GROUP_ID=' gradle.properties | cut -d'=' -f2 | tr -d '[:space:]')
-          [ -n "${VERSION:-}" ] || { echo "PUBLISH_VERSION missing"; exit 1; }
-          [ -n "${GROUP:-}" ]   || { echo "PUBLISH_GROUP_ID missing"; exit 1; }
-
+          if [ -z "$VERSION" ]; then echo "PUBLISH_VERSION missing in gradle.properties"; exit 1; fi
           echo "RELEASE_VERSION=$VERSION" >> "$GITHUB_ENV"
-          echo "MAVEN_GROUP_ID=$GROUP"    >> "$GITHUB_ENV"
-          echo "MAVEN_GROUP_PATH=${GROUP//./\/}" >> "$GITHUB_ENV"
-          echo "Found version=$VERSION groupId=$GROUP"
+          echo "Found version: $VERSION"
 
-      - name: 🔧 Compute effective version + names
+      - name: 🔧 Set publication name and POM file name
         shell: bash
         run: |
           set -euo pipefail
@@ -78,69 +77,65 @@ jobs:
           fi
           echo "PUBLICATION_NAME=${PUB_NAME}" >> "$GITHUB_ENV"
           echo "EFFECTIVE_VERSION=${EFFECTIVE}" >> "$GITHUB_ENV"
-          echo "POM_FILE_NAME=${SDK_NAME}-${EFFECTIVE}.pom" >> "$GITHUB_ENV"
-          echo "RELEASE_REPO=${GITHUB_REPOSITORY#*/}" >> "$GITHUB_ENV"
+          echo "POM_FILE_NAME=velocityexchangeverifiers-${EFFECTIVE}.pom" >> "$GITHUB_ENV"
+          echo "Publication: ${PUB_NAME}"
+          echo "Effective version: ${EFFECTIVE}"
+          echo "POM file: velocityexchangeverifiers-${EFFECTIVE}.pom"
 
       - name: 🧪 Build AAR + Sources + Javadoc
         shell: bash
         run: |
           set -euo pipefail
           ./gradlew --no-daemon --warning-mode=all \
-            :${SDK_NAME}:clean \
-            :${SDK_NAME}:assembleAndroid \
+            :velocityexchangeverifiers:clean \
+            :velocityexchangeverifiers:assembleAndroid \
             -PprojectVersion=${RELEASE_VERSION} \
             -Pprerelease=${{ github.event.inputs.environment == 'rc' }} \
             --stacktrace
 
-      - name: ✅ Verify expected artifacts exist (module task)
+      - name: ✅ Verify expected artifacts exist
         run: |
-          ./gradlew --no-daemon :${{ env.SDK_NAME }}:verifyExpectedArtifactsExist \
+          ./gradlew --no-daemon :velocityexchangeverifiers:verifyExpectedArtifactsExist \
             -PprojectVersion=${RELEASE_VERSION} \
             -Pprerelease=${{ github.event.inputs.environment == 'rc' }}
 
-      - name: 🧹 Clean module staging root
+      - name: 🧹 Clean staging root
         shell: bash
         run: |
           set -euo pipefail
-          rm -rf ${SDK_NAME}/target/staging-deploy
-          mkdir -p ${SDK_NAME}/target/staging-deploy
+          rm -rf target/staging-deploy/io/velocitycareerlabs/velocityexchangeverifiers
+          mkdir -p target/staging-deploy/io/velocitycareerlabs/velocityexchangeverifiers
 
-      - name: 📦 Stage artifacts (module task)
+      - name: 📦 Stage Artifacts
         run: |
-          ./gradlew --no-daemon :${{ env.SDK_NAME }}:stageArtifacts \
+          ./gradlew --no-daemon :velocityexchangeverifiers:stageArtifacts \
             -PprojectVersion=${RELEASE_VERSION} \
             -Pprerelease=${{ github.event.inputs.environment == 'rc' }}
 
-      - name: 🧪 Generate POM File (module)
+      - name: 🧪 Generate POM File
         shell: bash
         run: |
           set -euo pipefail
-          ./gradlew --no-daemon :${SDK_NAME}:generatePomFileFor${{ env.PUBLICATION_NAME }}Publication \
+          ./gradlew --no-daemon :velocityexchangeverifiers:generatePomFileFor${{ env.PUBLICATION_NAME }}Publication \
             -PprojectVersion=${RELEASE_VERSION} -Pprerelease=${{ github.event.inputs.environment == 'rc' }}
+          mkdir -p target/staging-deploy/io/velocitycareerlabs/velocityexchangeverifiers/${{ env.EFFECTIVE_VERSION }}
+          cp -f velocityexchangeverifiers/build/publications/${{ env.PUBLICATION_NAME }}/pom-default.xml \
+             target/staging-deploy/io/velocitycareerlabs/velocityexchangeverifiers/${{ env.EFFECTIVE_VERSION }}/${{ env.POM_FILE_NAME }}
 
-          mkdir -p ${SDK_NAME}/target/staging-deploy/${MAVEN_GROUP_PATH}/${SDK_NAME}/${EFFECTIVE_VERSION}
-          cp ${SDK_NAME}/build/publications/${{ env.PUBLICATION_NAME }}/pom-default.xml \
-             ${SDK_NAME}/target/staging-deploy/${MAVEN_GROUP_PATH}/${SDK_NAME}/${EFFECTIVE_VERSION}/${POM_FILE_NAME}
-
-      - name: 🌉 Mirror staged artifacts to repo root (preflight)
+      - name: 🔎 Preflight repo-root staging has files
         run: |
-          mkdir -p target/staging-deploy
-          rsync -av --delete ${SDK_NAME}/target/staging-deploy/ target/staging-deploy/
-          echo "Repo-root staging after preflight mirror:"
-          find target/staging-deploy -maxdepth 6 -type f -print | sed 's/^/ - /'
+          echo "Repo-root staging contents:"
+          find target/staging-deploy -maxdepth 3 -type f -print | sed 's/^/ - /'
+          test -d target/staging-deploy || { echo "missing target/staging-deploy"; exit 1; }
 
-      - name: 📂 List staged artifacts (module + root)
-        run: |
-          echo "== Module staging =="
-          ls -R ${SDK_NAME}/target/staging-deploy || true
-          echo "== Repo-root staging =="
-          ls -R target/staging-deploy || true
+      - name: 📂 List staged artifacts
+        run: ls -R target/staging-deploy
 
-      - name: 🔒 Guard staged contents (repo-root)
+      - name: 🔒 Guard staged contents
         shell: bash
         run: |
           set -euo pipefail
-          BASE=target/staging-deploy/${MAVEN_GROUP_PATH}/${SDK_NAME}
+          BASE=target/staging-deploy/io/velocitycareerlabs/velocityexchangeverifiers
           echo "Contents of $BASE:"; ls -1 "$BASE" || true
           for d in "$BASE"/*; do
             [ -d "$d" ] || continue
@@ -151,73 +146,26 @@ jobs:
           done
           ls -1 "$BASE/${EFFECTIVE_VERSION}"
 
-      - name: 🔎 Verify POM version (repo-root)
+      - name: 🔎 Verify POM version matches EFFECTIVE_VERSION
         shell: bash
         run: |
           set -euo pipefail
-          POM=target/staging-deploy/${MAVEN_GROUP_PATH}/${SDK_NAME}/${EFFECTIVE_VERSION}/${POM_FILE_NAME}
+          POM="target/staging-deploy/io/velocitycareerlabs/velocityexchangeverifiers/${EFFECTIVE_VERSION}/${POM_FILE_NAME}"
           grep -q "<version>${EFFECTIVE_VERSION}</version>" "$POM" || { echo "POM version mismatch"; exit 1; }
+
+      - name: 📜 Show staged file names
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir=target/staging-deploy/io/velocitycareerlabs/velocityexchangeverifiers/${EFFECTIVE_VERSION}
+          ls -l "$dir"
 
       - name: ⬆️ Upload staged bundle (debug)
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: staged-${{ env.SDK_NAME }}-${{ env.EFFECTIVE_VERSION }}
+          name: staged-${{ env.EFFECTIVE_VERSION }}
           path: target/staging-deploy
-
-      - name: ✅ Validate staged files (repo-root)
-        shell: bash
-        run: |
-          set -euo pipefail
-          dir=target/staging-deploy/${MAVEN_GROUP_PATH}/${SDK_NAME}/${EFFECTIVE_VERSION}
-          echo "📂 Validating: $dir"
-          ls -l "$dir" || true
-          missing=0
-          check() {
-            local f="$1"
-            if [[ -f "$dir/$f" ]]; then
-              echo "✅ Found $f"
-            else
-              echo "❌ Missing $f"
-              missing=1
-            fi
-          }
-          check "${POM_FILE_NAME}"
-          check "${SDK_NAME}-${EFFECTIVE_VERSION}.aar"
-          check "${SDK_NAME}-${EFFECTIVE_VERSION}-sources.jar"
-          check "${SDK_NAME}-${EFFECTIVE_VERSION}-javadoc.jar"
-          if [[ $missing -ne 0 ]]; then
-            echo "🔎 Debugging hints:"
-            echo "  • ${SDK_NAME}/build/libs:"
-            ls -l ${SDK_NAME}/build/libs || true
-            echo "  • ${SDK_NAME}/build/outputs/aar:"
-            ls -l ${SDK_NAME}/build/outputs/aar || true
-            exit 1
-          fi
-
-      - name: 🔍 Echo what JReleaser will attach
-        run: |
-          echo "AARs in repo-root staging:"
-          find target/staging-deploy -type f -name "*.aar" -print
-
-      - name: 🔒 Hard fail if exact AAR path missing
-        shell: bash
-        run: |
-          set -euo pipefail
-          AAR="target/staging-deploy/${MAVEN_GROUP_PATH}/${SDK_NAME}/${EFFECTIVE_VERSION}/${SDK_NAME}-${EFFECTIVE_VERSION}.aar"
-          echo "Expecting AAR at: $AAR"
-          test -f "$AAR" || { echo "❌ AAR missing at $AAR"; echo "Contents of target/staging-deploy:"; find target/staging-deploy -maxdepth 6 -type f -print; exit 1; }
-          echo "✅ Found $AAR"
-
-      - name: Set RELEASE_REPO for JReleaser
-        shell: bash
-        run: echo "RELEASE_REPO=${GITHUB_REPOSITORY#*/}" >> "$GITHUB_ENV"
-
-      - name: 🔍 Show JReleaser config that will be used
-        run: |
-          echo "=== BEGIN jreleaser.template.yml ==="
-          cat jreleaser.template.yml || true
-          echo "=== END jreleaser.template.yml ==="
 
       - name: 🚀 Run JReleaser full-release
         uses: jreleaser/release-action@v2
@@ -228,20 +176,15 @@ jobs:
             --config-file=jreleaser.template.yml
             --debug
         env:
-          # Generic for any SDK
-          JRELEASER_PROJECT_JAVA_ARTIFACT_ID: ${{ env.SDK_NAME }}
-          JRELEASER_PROJECT_VERSION: ${{ env.EFFECTIVE_VERSION }}
-          JRELEASER_TAG_NAME: ${{ env.EFFECTIVE_VERSION }}
-          JRELEASER_RELEASE_NAME: ${{ github.event.inputs.environment == 'rc' && 'Release Candidate ' || '' }}${{ env.EFFECTIVE_VERSION }}
-          JRELEASER_PRERELEASE_PATTERN: ${{ github.event.inputs.environment == 'rc' && env.EFFECTIVE_VERSION || 'OFF' }}
-          # Repo + tokens
-          JRELEASER_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          JRELEASER_PROJECT_JAVA_ARTIFACT_ID: velocityexchangeverifiers
           JRELEASER_MAVENCENTRAL_USERNAME: ${{ secrets.MAVEN_CENTRAL_TOKEN_USERNAME }}
           JRELEASER_MAVENCENTRAL_PASSWORD: ${{ secrets.MAVEN_CENTRAL_TOKEN_PASSWORD }}
           JRELEASER_MAVENCENTRAL_STAGE: ${{ secrets.MAVEN_CENTRAL_STAGING_PROFILE_ID }}
-          # Signing (memory mode)
+          JRELEASER_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          JRELEASER_PROJECT_VERSION: ${{ env.EFFECTIVE_VERSION }}
           JRELEASER_GPG_PUBLIC_KEY: ${{ secrets.MAVEN_CENTRAL_GPG_PUBLIC_KEY }}
           JRELEASER_GPG_SECRET_KEY: ${{ secrets.MAVEN_CENTRAL_GPG_PRIVATE_KEY }}
           JRELEASER_GPG_PASSPHRASE: ${{ secrets.MAVEN_CENTRAL_SIGNING_PASSWORD }}
-          # JReleaser release repo name
-          RELEASE_REPO: ${{ env.RELEASE_REPO }}
+          JRELEASER_TAG_NAME: ${{ env.EFFECTIVE_VERSION }}
+          JRELEASER_RELEASE_NAME: ${{ github.event.inputs.environment == 'rc' && 'Release Candidate ' || '' }}${{ env.EFFECTIVE_VERSION }}
+          JRELEASER_PRERELEASE_PATTERN: ${{ github.event.inputs.environment == 'rc' && env.EFFECTIVE_VERSION || 'OFF' }}
