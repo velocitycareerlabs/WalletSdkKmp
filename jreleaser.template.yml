@@ -10,7 +10,8 @@ project:
   name: "{{env.SDK_NAME}}"
   # version comes from JRELEASER_PROJECT_VERSION (set in the workflow)
   description: Velocity Career Labs SDK
-  authors: [Michael Avoyan]
+  authors:
+    - Michael Avoyan
   inceptionYear: 2025
   license: Apache-2.0
   links:
@@ -47,9 +48,9 @@ distributions:
   android-sdk:
     type: BINARY
     artifacts:
-      # No envs & no hard-coded names in the path.
-      # Uses only JReleaser-known properties and a safe glob for the group path.
-      - path: "target/staging-deploy/**/{{project.name}}-{{project.version}}.aar"
+      # Attach *the AAR only* to the GitHub release.
+      # Use a glob so we don't depend on Mustache vars during artifact path resolution.
+      - path: "target/staging-deploy/**/*.aar"
 
 deploy:
   maven:
