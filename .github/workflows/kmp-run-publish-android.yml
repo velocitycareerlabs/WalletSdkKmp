@@ -41,12 +41,6 @@ jobs:
           # Use current repo name for GitHub releases (e.g., WalletSdkKmp)
           echo "RELEASE_REPO=${GITHUB_REPOSITORY#*/}" >> "$GITHUB_ENV"
 
-      - name: Derive absolute STAGING_ROOT for JReleaser
-        shell: bash
-        run: |
-          set -euo pipefail
-          echo "STAGING_ROOT=$GITHUB_WORKSPACE/$SDK_DIR/target/staging-deploy" >> "$GITHUB_ENV"
-
       - name: ☕ Set up Java
         uses: actions/setup-java@v4
         with:
@@ -168,10 +162,10 @@ jobs:
           name: staged-${{ env.EFFECTIVE_VERSION }}
           path: velocityexchangeverifiers/target/staging-deploy
 
-      - name: 🔍 Check STAGING_ROOT contents (debug)
+      - name: 🔍 Check repo-root staging (debug)
         run: |
-          echo "STAGING_ROOT=$STAGING_ROOT"
-          ls -R "$STAGING_ROOT" || (echo "STAGING_ROOT missing" && exit 1)
+          echo "Repo root contents of target/staging-deploy:"
+          ls -R target/staging-deploy || (echo "root staging missing" && exit 1)
 
       - name: 🚀 Run JReleaser full-release
         uses: jreleaser/release-action@v2
@@ -183,7 +177,6 @@ jobs:
             --debug
           working-directory: velocityexchangeverifiers
         env:
-          STAGING_ROOT: ${{ env.STAGING_ROOT }}
           JRELEASER_PROJECT_JAVA_ARTIFACT_ID: velocityexchangeverifiers
           JRELEASER_MAVENCENTRAL_USERNAME: ${{ secrets.MAVEN_CENTRAL_TOKEN_USERNAME }}
           JRELEASER_MAVENCENTRAL_PASSWORD: ${{ secrets.MAVEN_CENTRAL_TOKEN_PASSWORD }}

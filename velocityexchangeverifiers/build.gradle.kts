@@ -357,3 +357,14 @@ tasks.register<Sync>("stageArtifacts") {
         }
     }
 }
+
+// --- Mirror staged files to repo root so JReleaser can find them ---
+tasks.register<Sync>("syncStagedToRoot") {
+    dependsOn("stageArtifacts")
+    from(layout.projectDirectory.dir("target/staging-deploy"))
+    into(rootProject.layout.projectDirectory.dir("target/staging-deploy"))
+}
+
+tasks.named("stageArtifacts").configure {
+    finalizedBy("syncStagedToRoot")
+}

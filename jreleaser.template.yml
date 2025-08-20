@@ -48,8 +48,8 @@ distributions:
   android-sdk:
     type: BINARY
     artifacts:
-      # We keep env interpolation in values (this does work)
-      - path: "{{env.STAGING_ROOT}}/**"
+      # Gradle mirrors staged files to repo root: target/staging-deploy/**
+      - path: "target/staging-deploy/**"
 
 deploy:
   maven:
@@ -68,4 +68,4 @@ deploy:
         javadocJar: true
         verifyPom: false
         stagingRepositories:
-          - "{{env.STAGING_ROOT}}"
+          - "target/staging-deploy"
