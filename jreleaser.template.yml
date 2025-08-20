@@ -43,7 +43,7 @@ release:
       enabled: true
       # pattern:   JRELEASER_PRERELEASE_PATTERN  (set via env in workflow; omit here)
 
-# Use a fixed key here; env interpolation does not work in map keys
+# Fixed key (env interpolation doesn’t work in map keys)
 distributions:
   android-sdk:
     type: BINARY

@@ -38,7 +38,6 @@ jobs:
           echo "SDK_DIR=velocityexchangeverifiers" >> "$GITHUB_ENV"
           echo "MAVEN_GROUP_ID=io.velocitycareerlabs" >> "$GITHUB_ENV"
           echo "MAVEN_GROUP_PATH=io/velocitycareerlabs" >> "$GITHUB_ENV"
-          # Use current repo name for GitHub releases (e.g., WalletSdkKmp)
           echo "RELEASE_REPO=${GITHUB_REPOSITORY#*/}" >> "$GITHUB_ENV"
 
       - name: ☕ Set up Java
@@ -155,17 +154,22 @@ jobs:
           dir=velocityexchangeverifiers/target/staging-deploy/io/velocitycareerlabs/velocityexchangeverifiers/${EFFECTIVE_VERSION}
           ls -l "$dir"
 
-      - name: ⬆️ Upload staged bundle (debug)
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: staged-${{ env.EFFECTIVE_VERSION }}
-          path: velocityexchangeverifiers/target/staging-deploy
+      - name: 🌉 Mirror staged artifacts to repo root
+        run: |
+          mkdir -p target/staging-deploy
+          rsync -av --delete velocityexchangeverifiers/target/staging-deploy/ target/staging-deploy/
 
       - name: 🔍 Check repo-root staging (debug)
         run: |
           echo "Repo root contents of target/staging-deploy:"
           ls -R target/staging-deploy || (echo "root staging missing" && exit 1)
+
+      - name: ⬆️ Upload staged bundle (debug)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: staged-${{ env.EFFECTIVE_VERSION }}
+          path: target/staging-deploy
 
       - name: 🚀 Run JReleaser full-release
         uses: jreleaser/release-action@v2
