@@ -50,12 +50,6 @@ distributions:
     artifacts:
       # AAR
       - path: "target/staging-deploy/{{env.MAVEN_GROUP_PATH}}/{{env.SDK_NAME}}/{{project.version}}/{{env.SDK_NAME}}-{{project.version}}.aar"
-      # Sources JAR
-      - path: "target/staging-deploy/{{env.MAVEN_GROUP_PATH}}/{{env.SDK_NAME}}/{{project.version}}/{{env.SDK_NAME}}-{{project.version}}-sources.jar"
-      # Javadoc JAR
-      - path: "target/staging-deploy/{{env.MAVEN_GROUP_PATH}}/{{env.SDK_NAME}}/{{project.version}}/{{env.SDK_NAME}}-{{project.version}}-javadoc.jar"
-      # POM
-      - path: "target/staging-deploy/{{env.MAVEN_GROUP_PATH}}/{{env.SDK_NAME}}/{{project.version}}/{{env.SDK_NAME}}-{{project.version}}.pom"
 
 deploy:
   maven:
