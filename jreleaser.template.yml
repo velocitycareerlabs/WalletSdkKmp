@@ -43,13 +43,12 @@ release:
       enabled: true
       # pattern:   JRELEASER_PRERELEASE_PATTERN  (set via env in workflow; omit here)
 
-# Distribution name matches project.name (SDK_NAME)
+# Use a fixed key here; env interpolation does not work in map keys
 distributions:
-  "{{env.SDK_NAME}}":
+  android-sdk:
     type: BINARY
     artifacts:
-      # Staged artifacts prepared by Gradle:
-      # <SDK_DIR>/target/staging-deploy/<groupPath>/<artifactId>/<version>/**
+      # We keep env interpolation in values (this does work)
       - path: "{{env.STAGING_ROOT}}/**"
 
 deploy:
