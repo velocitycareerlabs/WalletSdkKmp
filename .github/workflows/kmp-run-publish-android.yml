@@ -123,7 +123,7 @@ jobs:
           ./gradlew --no-daemon :velocityexchangeverifiers:generatePomFileFor${{ env.PUBLICATION_NAME }}Publication \
             -PprojectVersion=${RELEASE_VERSION} -Pprerelease=${{ github.event.inputs.environment == 'rc' }}
           mkdir -p velocityexchangeverifiers/target/staging-deploy/io/velocitycareerlabs/velocityexchangeverifiers/${{ env.EFFECTIVE_VERSION }}
-          cp velocityexchangeverifiers/build/publications/${{ env.PUBLICATION_NAME }}/pom-default.xml \
+          cp -f velocityexchangeverifiers/build/publications/${{ env.PUBLICATION_NAME }}/pom-default.xml \
              velocityexchangeverifiers/target/staging-deploy/io/velocitycareerlabs/velocityexchangeverifiers/${{ env.EFFECTIVE_VERSION }}/${{ env.POM_FILE_NAME }}
 
       - name: 📂 List staged artifacts
