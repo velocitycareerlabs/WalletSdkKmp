@@ -1,21 +1,17 @@
-# This file is Mustache-templated by JReleaser. Values come from env vars:
-#   SDK_NAME         e.g. velocityexchangeverifiers           (artifactId / distribution name)
-#   SDK_DIR          e.g. velocityexchangeverifiers           (module directory)
-#   MAVEN_GROUP_ID   e.g. io.velocitycareerlabs               (groupId)
-#   MAVEN_GROUP_PATH e.g. io/velocitycareerlabs               (groupId with slashes)
-#   RELEASE_REPO     e.g. VelocityExchangeVerifiers           (GitHub repo name for releases)
-
 project:
-  # Drives bundle name: <groupId>-<project.name>-<version>-bundle.zip
-  name: {{env.SDK_NAME}}
-  # version comes from JRELEASER_PROJECT_VERSION (set in the workflow)
-  description: Velocity Career Labs SDK
+  name: WalletSdkKmp
+  # version: from JRELEASER_PROJECT_VERSION
+  description: Velocity Career Labs Android SDK
   authors:
     - Michael Avoyan
   inceptionYear: 2025
   license: Apache-2.0
   links:
     homepage: https://github.com/velocitycareerlabs
+  languages:
+    java:
+      groupId: io.velocitycareerlabs
+      artifactId: velocityexchangeverifiers
   extraProperties:
     displayName: Velocity Career Labs Android SDK
 
@@ -25,39 +21,29 @@ signing:
   mode: MEMORY
   # publicKey: from JRELEASER_GPG_PUBLIC_KEY
   # secretKey: from JRELEASER_GPG_SECRET_KEY
-  # passphrase: from JRELEASER_GPG_PASSPHRASE
+  # passphrase: JRELEASER_GPG_PASSPHRASE
 
 release:
   github:
     owner: velocitycareerlabs
-    name: {{env.RELEASE_REPO}}
+    name: VelocityExchangeVerifiers
     # token: from JRELEASER_GITHUB_TOKEN
     # tagName: from JRELEASER_TAG_NAME
     # releaseName: from JRELEASER_RELEASE_NAME
     sign: true
     prerelease:
       enabled: true
-      # pattern:   JRELEASER_PRERELEASE_PATTERN
-
-# Distribution name matches project.name (SDK_NAME)
-distributions:
-    {{env.SDK_NAME}}:
-      type: BINARY
-      artifacts:
-        # Staged artifacts prepared by Gradle:
-        # <SDK_DIR>/target/staging-deploy/<groupPath>/<artifactId>/<version>/**
-        - path: "{{env.SDK_DIR}}/target/staging-deploy/{{env.MAVEN_GROUP_PATH}}/{{env.SDK_NAME}}/**"
+      # pattern: from JRELEASER_PRERELEASE_PATTERN
 
 deploy:
   maven:
     mavenCentral:
-      # Key can be any name; using SDK_NAME for clarity
-        {{env.SDK_NAME}}:
+      velocityexchangeverifiers:
         active: ALWAYS
         url: https://central.sonatype.com/api/v1/publisher
-        # username: JRELEASER_MAVENCENTRAL_USERNAME
-        # password: JRELEASER_MAVENCENTRAL_PASSWORD
-        # stage:    JRELEASER_MAVENCENTRAL_STAGE
+        # username: from JRELEASER_MAVENCENTRAL_USERNAME
+        # password: from JRELEASER_MAVENCENTRAL_PASSWORD
+        # stage: from JRELEASER_MAVENCENTRAL_STAGE
         authorization: BASIC
         sign: true
         checksums: true
@@ -65,4 +51,4 @@ deploy:
         javadocJar: true
         verifyPom: false
         stagingRepositories:
-          - "{{env.SDK_DIR}}/target/staging-deploy"
+          - velocityexchangeverifiers/target/staging-deploy
