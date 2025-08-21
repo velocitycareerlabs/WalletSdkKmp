@@ -28,6 +28,7 @@ waltid-version = "0.14.0"
 ktlint = "13.0.0"
 kotlinxSerializationJson = "1.9.0"
 dokka = "1.9.20"
+jreleaser = "1.19.0"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -69,3 +70,4 @@ cocoapods = { id = "org.jetbrains.kotlin.native.cocoapods" }
 mavenPublish = { id = "maven-publish" }
 signing = { id = "signing" }
 dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
+jreleaser = { id = "org.jreleaser", version.ref = "jreleaser" }

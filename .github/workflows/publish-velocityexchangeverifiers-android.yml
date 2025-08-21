@@ -1,4 +1,4 @@
-name: KMP RUN Publish Android
+name: Publish velocityexchangeverifiers Android
 
 on:
   workflow_dispatch:
@@ -189,11 +189,12 @@ jobs:
       - name: 🚀 Run JReleaser full-release
         uses: jreleaser/release-action@v2
         with:
-          version: 1.18.0
+          version: 1.19.0
           arguments: >
             full-release
             --config-file=jreleaser.template.yml
             --debug
+          working-directory: velocityexchangeverifiers
         env:
           JRELEASER_PROJECT_JAVA_ARTIFACT_ID: velocityexchangeverifiers
           JRELEASER_MAVENCENTRAL_USERNAME: ${{ secrets.MAVEN_CENTRAL_TOKEN_USERNAME }}
