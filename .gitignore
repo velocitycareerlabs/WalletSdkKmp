@@ -51,3 +51,4 @@ Pods/
 *.xcuserdata/
 project.xcworkspace/
 /kotlin-js-store
+/velocityexchangeverifiers/target
