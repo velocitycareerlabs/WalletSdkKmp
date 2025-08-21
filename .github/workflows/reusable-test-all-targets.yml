@@ -1,4 +1,4 @@
-name: KMP Reusable Build All Targets
+name: Reusable Test All Targets
 
 on:
   workflow_call:
@@ -7,7 +7,7 @@ env:
   JAVA_VERSION: "17"
 
 jobs:
-  build-all-targets:
+  run-tests:
     runs-on: macos-15
 
     steps:
@@ -34,15 +34,26 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      - name: Build All KMP Targets
-        run: ./gradlew clean assembleAllTargets
+      - name: Lint (ktlint)
+        run: ./gradlew cleanKtlintCheck
 
-      - name: Upload Build Artifacts
+      - name: Clean build
+        run: ./gradlew clean
+
+      - name: Run All Unit Tests
+        # 'check' for all standard tests
+        run: ./gradlew check
+
+      - name: Archive Test Results (XML)
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: kmp-build-artifacts
-          path: |
-            **/build/outputs/**
-            **/build/libs/**
-            **/build/distributions/**
+          name: test-results
+          path: '**/build/test-results/**/*.xml'
+
+      - name: Archive Test Reports (HTML)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports
+          path: '**/build/reports/tests/**'

@@ -1,4 +1,4 @@
-name: KMP RUN Publish Android
+name: Publish velocityexchangeverifiers Android
 
 on:
   workflow_dispatch:
