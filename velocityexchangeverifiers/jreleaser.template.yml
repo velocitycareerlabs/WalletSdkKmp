@@ -15,6 +15,10 @@ project:
   extraProperties:
     displayName: Velocity Exchange Verifiers
 
+environment:
+  variables:
+    JRELEASER_GIT_ROOT_SEARCH: true
+
 signing:
   active: ALWAYS
   armored: true
