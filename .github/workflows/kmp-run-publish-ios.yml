@@ -1,4 +1,4 @@
-name: Publish velocityexchangeverifiers iOS
+name: KMP RUN Publish iOS
 
 on:
   workflow_dispatch:

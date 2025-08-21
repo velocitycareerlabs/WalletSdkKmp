@@ -10,7 +10,6 @@ plugins {
     alias(libs.plugins.mavenPublish)
     alias(libs.plugins.signing)
     alias(libs.plugins.dokka)
-    alias(libs.plugins.jreleaser)
 }
 
 val publishGroupId = providers.gradleProperty("PUBLISH_GROUP_ID").get()
