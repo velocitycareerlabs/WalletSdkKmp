@@ -15,29 +15,13 @@ project:
   extraProperties:
     displayName: Velocity Exchange Verifiers
 
-environment:
-  variables:
-    JRELEASER_GIT_ROOT_SEARCH: true
-
 signing:
   active: ALWAYS
   armored: true
   mode: MEMORY
   # publicKey: from JRELEASER_GPG_PUBLIC_KEY
   # secretKey: from JRELEASER_GPG_SECRET_KEY
-  # passphrase: JRELEASER_GPG_PASSPHRASE
-
-release:
-  github:
-    owner: velocitycareerlabs
-    name: velocityexchangeverifiers
-    # token: from JRELEASER_GITHUB_TOKEN
-    # tagName: from JRELEASER_TAG_NAME
-    # releaseName: from JRELEASER_RELEASE_NAME
-    sign: true
-    prerelease:
-      enabled: true
-      # pattern: from JRELEASER_PRERELEASE_PATTERN
+  # passphrase: from JRELEASER_GPG_PASSPHRASE
 
 deploy:
   maven:
