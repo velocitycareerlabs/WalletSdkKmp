@@ -39,7 +39,7 @@ deploy:
         javadocJar: true
         verifyPom: false
         stagingRepositories:
-          - velocityexchangeverifiers/target/staging-deploy
+          - target/staging-deploy
 
 release:
   github:
