@@ -35,6 +35,7 @@ extra["publishArtifactId"] = publishArtifactId
 extra["publishVersion"] = publishVersion
 extra["effectiveVersion"] = effectiveVersion
 
+apply(from = "../load-maven-keys.gradle.kts")
 apply(from = "android-publish.gradle.kts")
 
 // TODO: For future optimization of building only the targets that are needed

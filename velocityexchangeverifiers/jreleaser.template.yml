@@ -1,19 +1,19 @@
 project:
-  name: WalletSdkKmp
+  name: velocityexchangeverifiers
   # version: from JRELEASER_PROJECT_VERSION
-  description: Velocity Career Labs Android SDK
+  description: Velocity Exchange Verifiers - Multiplatform SDK for Verifiable Credential JWT Verification
   authors:
     - Michael Avoyan
   inceptionYear: 2025
   license: Apache-2.0
   links:
-    homepage: https://github.com/velocitycareerlabs
+    homepage: https://github.com/velocitycareerlabs/WalletSdkKmp
   languages:
     java:
       groupId: io.velocitycareerlabs
       artifactId: velocityexchangeverifiers
   extraProperties:
-    displayName: Velocity Career Labs Android SDK
+    displayName: Velocity Exchange Verifiers
 
 signing:
   active: ALWAYS
@@ -21,19 +21,7 @@ signing:
   mode: MEMORY
   # publicKey: from JRELEASER_GPG_PUBLIC_KEY
   # secretKey: from JRELEASER_GPG_SECRET_KEY
-  # passphrase: JRELEASER_GPG_PASSPHRASE
-
-release:
-  github:
-    owner: velocitycareerlabs
-    name: VelocityExchangeVerifiers
-    # token: from JRELEASER_GITHUB_TOKEN
-    # tagName: from JRELEASER_TAG_NAME
-    # releaseName: from JRELEASER_RELEASE_NAME
-    sign: true
-    prerelease:
-      enabled: true
-      # pattern: from JRELEASER_PRERELEASE_PATTERN
+  # passphrase: from JRELEASER_GPG_PASSPHRASE
 
 deploy:
   maven:
@@ -51,4 +39,8 @@ deploy:
         javadocJar: true
         verifyPom: false
         stagingRepositories:
-          - velocityexchangeverifiers/target/staging-deploy
+          - target/staging-deploy
+
+release:
+  github:
+    enabled: false

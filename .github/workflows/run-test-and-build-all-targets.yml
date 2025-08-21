@@ -1,4 +1,4 @@
-name: KMP RUN Test And Build All Targets
+name: RUN Test And Build All Targets
 
 on:
   push:
@@ -13,10 +13,10 @@ on:
 jobs:
   test-on-pr:
     name: Run KMP Tests
-    uses: ./.github/workflows/kmp-reusable-test-all-targets.yml
+    uses: ./.github/workflows/reusable-test-all-targets.yml
     secrets: inherit
 
   build-on-pr:
     name: Build All KMP Targets
-    uses: ./.github/workflows/kmp-reusable-build-all-targets.yml
+    uses: ./.github/workflows/reusable-build-all-targets.yml
     secrets: inherit

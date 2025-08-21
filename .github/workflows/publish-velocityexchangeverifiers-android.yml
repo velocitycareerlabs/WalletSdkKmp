@@ -1,4 +1,4 @@
-name: KMP RUN Publish Android
+name: Publish velocityexchangeverifiers Android
 
 on:
   workflow_dispatch:
@@ -91,10 +91,11 @@ jobs:
 
       - name: 🧹 Clean staging root
         shell: bash
+        working-directory: velocityexchangeverifiers
         run: |
           set -euo pipefail
-          rm -rf velocityexchangeverifiers/target/staging-deploy/io/velocitycareerlabs/velocityexchangeverifiers
-          mkdir -p velocityexchangeverifiers/target/staging-deploy/io/velocitycareerlabs/velocityexchangeverifiers
+          rm -rf target/staging-deploy/io/velocitycareerlabs/velocityexchangeverifiers
+          mkdir -p target/staging-deploy/io/velocitycareerlabs/velocityexchangeverifiers
 
       - name: 📦 Stage Artifacts
         run: |
@@ -113,13 +114,15 @@ jobs:
              velocityexchangeverifiers/target/staging-deploy/io/velocitycareerlabs/velocityexchangeverifiers/${{ env.EFFECTIVE_VERSION }}/${{ env.POM_FILE_NAME }}
 
       - name: 📂 List staged artifacts
-        run: ls -R velocityexchangeverifiers/target/staging-deploy
+        working-directory: velocityexchangeverifiers
+        run: ls -R target/staging-deploy
 
       - name: 🔒 Guard staged contents
         shell: bash
+        working-directory: velocityexchangeverifiers
         run: |
           set -euo pipefail
-          BASE=velocityexchangeverifiers/target/staging-deploy/io/velocitycareerlabs/velocityexchangeverifiers
+          BASE=target/staging-deploy/io/velocitycareerlabs/velocityexchangeverifiers
           echo "Contents of $BASE:"; ls -1 "$BASE" || true
           for d in "$BASE"/*; do
             [ -d "$d" ] || continue
@@ -132,16 +135,18 @@ jobs:
 
       - name: 🔎 Verify POM version matches EFFECTIVE_VERSION
         shell: bash
+        working-directory: velocityexchangeverifiers
         run: |
           set -euo pipefail
-          POM=velocityexchangeverifiers/target/staging-deploy/io/velocitycareerlabs/velocityexchangeverifiers/${EFFECTIVE_VERSION}/velocityexchangeverifiers-${EFFECTIVE_VERSION}.pom
+          POM=target/staging-deploy/io/velocitycareerlabs/velocityexchangeverifiers/${EFFECTIVE_VERSION}/velocityexchangeverifiers-${EFFECTIVE_VERSION}.pom
           grep -q "<version>${EFFECTIVE_VERSION}</version>" "$POM" || { echo "POM version mismatch"; exit 1; }
 
       - name: 📜 Show staged file names
         shell: bash
+        working-directory: velocityexchangeverifiers
         run: |
           set -euo pipefail
-          dir=velocityexchangeverifiers/target/staging-deploy/io/velocitycareerlabs/velocityexchangeverifiers/${EFFECTIVE_VERSION}
+          dir=target/staging-deploy/io/velocitycareerlabs/velocityexchangeverifiers/${EFFECTIVE_VERSION}
           ls -l "$dir"
 
       - name: ⬆️ Upload staged bundle (debug)
@@ -153,9 +158,10 @@ jobs:
 
       - name: Validate staged files
         shell: bash
+        working-directory: velocityexchangeverifiers
         run: |
           set -euo pipefail
-          dir=velocityexchangeverifiers/target/staging-deploy/io/velocitycareerlabs/velocityexchangeverifiers/${EFFECTIVE_VERSION}
+          dir=target/staging-deploy/io/velocitycareerlabs/velocityexchangeverifiers/${EFFECTIVE_VERSION}
           echo "📂 Validating contents of: $dir"
           ls -l "$dir" || true
           
@@ -180,19 +186,19 @@ jobs:
             echo "🔎 Debugging hints:"
             echo "→ Check Gradle outputs:"
             echo "  • build/libs:"
-            ls -l velocityexchangeverifiers/build/libs || true
+            ls -l build/libs || true
             echo "  • build/outputs/aar:"
-            ls -l velocityexchangeverifiers/build/outputs/aar || true
+            ls -l build/outputs/aar || true
             exit 1
           fi
 
-      - name: 🚀 Run JReleaser full-release
+      - name: 🚀 Run JReleaser deploy
         uses: jreleaser/release-action@v2
         with:
-          version: 1.18.0
+          version: 1.19.0
           arguments: >
-            full-release
-            --config-file=jreleaser.template.yml
+            deploy
+            --config-file=velocityexchangeverifiers/jreleaser.template.yml
             --debug
         env:
           JRELEASER_PROJECT_JAVA_ARTIFACT_ID: velocityexchangeverifiers
