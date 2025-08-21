@@ -1,4 +1,4 @@
-name: RUN Test And Build All Targets
+name: Run Test And Build All Targets
 
 on:
   push:
