@@ -68,7 +68,7 @@ class Constants {
         val CredentialEndpointResponse =
             CredentialJwtParser.parseCredentialEndpointResponse(CREDENTIALS_MOCK)
 
-        val BaseContext =
+        val BaseVerificationContext =
             VerificationContext(
                 path = emptyList(),
                 credentialIssuerMetadata =

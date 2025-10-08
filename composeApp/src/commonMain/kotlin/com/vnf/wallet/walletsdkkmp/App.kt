@@ -43,7 +43,7 @@ fun App() {
             AlertDialog(
                 onDismissRequest = { message = null },
                 title = { Text("Verification Result") },
-                text = { Text(message!!) },
+                text = { Text(message ?: "missing message") },
                 confirmButton = {
                     TextButton(onClick = { message = null }) {
                         Text("OK")
@@ -66,12 +66,12 @@ fun MainMenu(onMessage: (String) -> Unit) {
                     val errors =
                         verifiersApi.verifyCredentialEndpointResponse(
                             response = Constants.CredentialEndpointResponse,
-                            context = Constants.BaseContext,
+                            context = Constants.BaseVerificationContext,
                         )
 
                     val message =
                         if (errors.isEmpty()) {
-                            "✅ Verification successful. No errors found."
+                            "✅ Verification succeed!"
                         } else {
                             buildString {
                                 append("❌ Verification failed:\n")
